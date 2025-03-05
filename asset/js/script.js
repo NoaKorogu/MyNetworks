@@ -1,13 +1,11 @@
-let lat = 48.852969; // Default latitude (Paris)
-let lon = 2.349903;  // Default longitude (Paris)
-let macarte = null;
-let waypointMode = false;
-let waypoints = [];
-let waterLinesLayer, gasLinesLayer;
-
+var lat = 48.852969; // Default latitude (Paris)
+var lon = 2.349903;  // Default longitude (Paris)
+var macarte = null;
+var waypointMode = false;
+var waypoints = [];
 
 // Créer un nouvel objet d'icône pour ajuster l'ancre
-let customIcon = L.icon({
+var customIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', // Icône par défaut
     iconSize: [25, 41],       // Taille de l'icône (largeur, hauteur)
     iconAnchor: [12, 41],     // Point d'ancrage de l'icône (centre bas)
@@ -22,9 +20,6 @@ function initMap() {
         minZoom: 1,
         maxZoom: 20
     }).addTo(macarte);
-
-    waterLinesLayer = L.layerGroup().addTo(macarte);
-    gasLinesLayer = L.layerGroup().addTo(macarte);
 
     // Demande la localisation de l'utilisateur
     centerMapOnUserLocation();
@@ -51,8 +46,8 @@ function createWaypoint(latlng) {
     // Retirer la classe pour revenir au curseur normal
     document.getElementById('map').classList.remove('cursor-waypoint');
 
-    let marker = L.marker([latlng.lat, latlng.lng], { icon: customIcon }).addTo(macarte);
-    let waypoint = {
+    var marker = L.marker([latlng.lat, latlng.lng], { icon: customIcon }).addTo(macarte);
+    var waypoint = {
         lat: latlng.lat,
         lon: latlng.lng,
         marker: marker,
@@ -71,7 +66,7 @@ function createWaypoint(latlng) {
 
 // Modifier le nom d'un waypoint
 function editWaypoint(index) {
-    let newName = prompt("Entrez un nouveau nom pour ce waypoint :", waypoints[index].name);
+    var newName = prompt("Entrez un nouveau nom pour ce waypoint :", waypoints[index].name);
     if (newName !== null && newName.trim() !== "") {
         waypoints[index].name = newName;
         waypoints[index].marker.bindPopup(`
@@ -86,7 +81,7 @@ function editWaypoint(index) {
 
 // Supprimer un waypoint
 function deleteWaypoint(index) {
-    let confirmDelete = confirm("Voulez-vous vraiment supprimer ce waypoint ?");
+    var confirmDelete = confirm("Voulez-vous vraiment supprimer ce waypoint ?");
     if (confirmDelete) {
         macarte.removeLayer(waypoints[index].marker);
         waypoints.splice(index, 1);
@@ -95,7 +90,7 @@ function deleteWaypoint(index) {
 
 // Recherche de lieu avec l'API Nominatim
 function searchLocation() {
-    let query = document.getElementById('search-bar').value;
+    var query = document.getElementById('search-bar').value;
     if (!query) {
         alert("Veuillez entrer un lieu à rechercher.");
         return;
@@ -105,13 +100,13 @@ function searchLocation() {
         .then(response => response.json())
         .then(data => {
             if (data && data.length > 0) {
-                let result = data[0];
-                let lat = parseFloat(result.lat);
-                let lon = parseFloat(result.lon);
+                var result = data[0];
+                var lat = parseFloat(result.lat);
+                var lon = parseFloat(result.lon);
 
                 macarte.setView([lat, lon], 14);
 
-                let marker = L.marker([lat, lon]).addTo(macarte)
+                var marker = L.marker([lat, lon]).addTo(macarte)
                     .bindPopup(`<b>${result.display_name}</b>`)
                     .openPopup();
             } else {
@@ -129,8 +124,8 @@ function centerMapOnUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                let userLat = position.coords.latitude;
-                let userLon = position.coords.longitude;
+                var userLat = position.coords.latitude;
+                var userLon = position.coords.longitude;
 
                 // Centrer la carte et ajouter un marqueur pour la position de l'utilisateur
                 macarte.setView([userLat, userLon], 17);
@@ -142,46 +137,6 @@ function centerMapOnUserLocation() {
         );
     } else {
         alert("La géolocalisation n'est pas prise en charge par votre navigateur.");
-    }
-}
-
-function fetchOSMData(query, layer) {
-    const OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
-    fetch(`${OVERPASS_URL}?data=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            layer.clearLayers(); // Nettoyer la couche avant d'ajouter de nouvelles données
-            
-            let geojson = osmtogeojson(data); // Conversion en GeoJSON
-            
-            L.geoJSON(geojson, {
-                style: { color: layer === waterLinesLayer ? "blue" : "red", weight: 2 }
-            }).addTo(layer);
-        })
-        .catch(error => console.error("Erreur lors du chargement des données OSM :", error));
-}
-
-function toggleWaterLines() {
-    if (document.getElementById("toggle-water").checked) {
-        let waterQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="water"];
-            out geom;`;
-        fetchOSMData(waterQuery, waterLinesLayer);
-    } else {
-        waterLinesLayer.clearLayers();
-    }
-}
-
-function toggleGasLines() {
-    if (document.getElementById("toggle-gas").checked) {
-        let gasQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="gas"];
-            out geom;`;
-        fetchOSMData(gasQuery, gasLinesLayer);
-    } else {
-        gasLinesLayer.clearLayers();
     }
 }
 

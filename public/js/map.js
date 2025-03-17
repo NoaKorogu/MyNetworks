@@ -1,19 +1,18 @@
-let lat = 48.852969; // Default latitude (Paris)
-let lon = 2.349903;  // Default longitude (Paris)
+let lat = 48.852969; let lon = 2.349903;  // Map center by default on Paris
 let macarte = null;
 let waypointMode = false;
 let waypoints = [];
 let waterLinesLayer, gasLinesLayer;
 
-// Créer un nouvel objet d'icône pour ajuster l'ancre
+// Define waypoint appearance
 let customIcon = L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', // Icône par défaut
-    iconSize: [25, 41],       // Taille de l'icône (largeur, hauteur)
-    iconAnchor: [12, 41],     // Point d'ancrage de l'icône (centre bas)
-    popupAnchor: [0, -41]     // Position de la bulle par rapport à l'icône
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    iconSize: [25, 41],     
+    iconAnchor: [12, 41],   
+    popupAnchor: [0, -41]    
 });
 
-// Initialisation de la carte
+// Map init
 function initMap() {
     macarte = L.map('map').setView([lat, lon], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
@@ -25,10 +24,9 @@ function initMap() {
     waterLinesLayer = L.layerGroup().addTo(macarte);
     gasLinesLayer = L.layerGroup().addTo(macarte);
 
-    // Demande la localisation de l'utilisateur
+    // Ask for user location
     centerMapOnUserLocation();
 
-    // Ajoute un événement pour les clics sur la carte
     macarte.on('click', function(e) {
         if (waypointMode) {
             createWaypoint(e.latlng);
@@ -36,18 +34,17 @@ function initMap() {
     });
 }
 
-// Activer le mode waypoint
 function enableWaypointMode() {
     waypointMode = true;
-    document.getElementById('map').classList.add('cursor-waypoint');  // Ajoute la classe pour le curseur
+    document.getElementById('map').classList.add('cursor-waypoint'); 
     alert("Cliquez sur la carte pour ajouter un waypoint.");
 }
 
-// Créer un nouveau waypoint
+// Create new waypoint
 function createWaypoint(latlng) {
     waypointMode = false;
 
-    // Retirer la classe pour revenir au curseur normal
+    // special cursor -> normal cursor
     document.getElementById('map').classList.remove('cursor-waypoint');
 
     let marker = L.marker([latlng.lat, latlng.lng], { icon: customIcon }).addTo(macarte);
@@ -68,7 +65,7 @@ function createWaypoint(latlng) {
     `).openPopup();
 }
 
-// Modifier le nom d'un waypoint
+// Edit waypoint name
 function editWaypoint(index) {
     let newName = prompt("Entrez un nouveau nom pour ce waypoint :", waypoints[index].name);
     if (newName !== null && newName.trim() !== "") {
@@ -83,7 +80,7 @@ function editWaypoint(index) {
     }
 }
 
-// Supprimer un waypoint
+// Delete waypoint
 function deleteWaypoint(index) {
     let confirmDelete = confirm("Voulez-vous vraiment supprimer ce waypoint ?");
     if (confirmDelete) {
@@ -92,14 +89,14 @@ function deleteWaypoint(index) {
     }
 }
 
-// Recherche de lieu avec l'API Nominatim
+// Search Bar
 function searchLocation() {
     let query = document.getElementById('search-bar').value;
     if (!query) {
         alert("Veuillez entrer un lieu à rechercher.");
         return;
     }
-
+    
     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
@@ -123,7 +120,7 @@ function searchLocation() {
         });
 }
 
-// Centrer la carte sur la position de l'utilisateur
+// Center map on user location
 function centerMapOnUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -131,7 +128,7 @@ function centerMapOnUserLocation() {
                 let userLat = position.coords.latitude;
                 let userLon = position.coords.longitude;
 
-                // Centrer la carte et ajouter un marqueur pour la position de l'utilisateur
+                // Center map and add a waypoint on user location
                 macarte.setView([userLat, userLon], 17);
             },
             function(error) {
@@ -149,9 +146,9 @@ function fetchOSMData(query, layer) {
     fetch(`${OVERPASS_URL}?data=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
-            layer.clearLayers(); // Nettoyer la couche avant d'ajouter de nouvelles données
+            layer.clearLayers();
 
-            let geojson = window.osmtogeojson(data); // Utilisez la méthode ici
+            let geojson = window.osmtogeojson(data);
             L.geoJSON(geojson, {
                 style: { color: layer === waterLinesLayer ? "blue" : "red", weight: 2 }
             }).addTo(layer);
@@ -183,7 +180,7 @@ function toggleGasLines() {
     }
 }
 
-// Charger la carte au chargement de la fenêtre
+// Load map 
 window.onload = function() {
     initMap();
 };

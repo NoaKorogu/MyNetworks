@@ -8,6 +8,13 @@
 {% endblock %}
 
 {% block body %}
+    <script>
+    fetch('/api/networks')
+        .then(response => response.json())
+        .then(data => console.log('Network Names:', data))
+        .catch(error => console.error('Error fetching networks:', error));
+</script>
+
     <div id="app">
         <div id="sidebar">
             <button onclick="enableWaypointMode()">Créer un Waypoint</button>

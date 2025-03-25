@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\PathRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PathRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use LongitudeOne\Spatial\PHP\Types\Geometry\LineString;
 
 #[ORM\Entity(repositoryClass: PathRepository::class)]
 #[ORM\Table(name: "path")]
@@ -22,14 +23,17 @@ class Path
     #[ORM\Column(length: 50)]
     private ?string $color = null;
 
+    #[ORM\Column(type: 'geometry', options: ['geometry_type' => 'LINESTRING'], nullable: false)]
+    private ?LineString $path = null;
+
     /**
      * @var Collection<int, PartOf>
      */
-    #[ORM\ManyToMany(targetEntity: PartOf::class, mappedBy: 'path_id')]  // Update to match relationship changes
+    #[ORM\ManyToMany(targetEntity: PartOf::class, mappedBy: 'path_id')]
     private Collection $partOfs;
 
     #[ORM\ManyToOne(inversedBy: 'paths')]
-    #[ORM\JoinColumn(name: 'network_id', referencedColumnName: 'id')]  // Update if column naming changed
+    #[ORM\JoinColumn(name: 'network_id', referencedColumnName: 'id')]
     private ?Networks $network_id = null;
 
     public function __construct()
@@ -50,7 +54,6 @@ class Path
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -62,7 +65,17 @@ class Path
     public function setColor(string $color): static
     {
         $this->color = $color;
+        return $this;
+    }
 
+    public function getPath(): ?LineString
+    {
+        return $this->path;
+    }
+
+    public function setPath(?LineString $path): static
+    {
+        $this->path = $path;
         return $this;
     }
 
@@ -80,7 +93,6 @@ class Path
             $this->partOfs->add($partOf);
             $partOf->addPathId($this);
         }
-
         return $this;
     }
 
@@ -89,7 +101,6 @@ class Path
         if ($this->partOfs->removeElement($partOf)) {
             $partOf->removePathId($this);
         }
-
         return $this;
     }
 
@@ -101,7 +112,6 @@ class Path
     public function setNetworkId(?Networks $network_id): static
     {
         $this->network_id = $network_id;
-
         return $this;
     }
 }

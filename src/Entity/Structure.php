@@ -6,9 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\StructureRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use LongitudeOne\Spatial\PHP\Types\Geometry\Point;
 
 #[ORM\Entity(repositoryClass: StructureRepository::class)]
-// #[ORM\Entity]
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name: "discriminator", type: "string")]
 #[ORM\DiscriminatorMap(["structure" => Structure::class, "bus_stop" => BusStop::class, "water" => Water::class, "electrical" => Electrical::class])]
@@ -23,15 +23,15 @@ class Structure
     #[ORM\Column(length: 128)]
     protected ?string $name = null;
 
-    #[ORM\Column(length: 255)]
-    protected ?string $location = null;
+    #[ORM\Column(type: "geography", options: ["geometry_type" => "POINT", "srid" => 4326])]
+    protected ?Point $location = null;
 
     #[ORM\ManyToOne(inversedBy: 'structures')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'network_id', referencedColumnName: 'id', nullable: false)]
     protected ?Networks $network_id = null;
 
     #[ORM\ManyToOne(inversedBy: 'structures')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'type_id', referencedColumnName: 'id',nullable: false)]
     protected ?Type $type_id = null;
 
     /**
@@ -62,12 +62,12 @@ class Structure
         return $this;
     }
 
-    public function getLocation(): ?string
+    public function getLocation(): ?Point
     {
         return $this->location;
     }
 
-    public function setLocation(string $location): static
+    public function setLocation(Point $location): static
     {
         $this->location = $location;
 

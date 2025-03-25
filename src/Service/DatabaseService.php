@@ -12,11 +12,4 @@ class DatabaseService
     {
         $this->entityManager = $entityManager;
     }
-
-    public function fetchSomething(): array
-    {
-        $conn = $this->entityManager->getConnection();
-        $sql = "SELECT * FROM my_table";
-        return $conn->fetchAllAssociative($sql);
-    }
 }

@@ -16,6 +16,15 @@ class TypeRepository extends ServiceEntityRepository
         parent::__construct($registry, Type::class);
     }
 
+    public function findAllStructureType(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->select('t.id','t.name')
+            ->orderBy('t.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return NetworksType[] Returns an array of NetworksType objects
     //     */

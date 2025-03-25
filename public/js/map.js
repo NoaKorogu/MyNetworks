@@ -89,6 +89,15 @@ function deleteWaypoint(index) {
     }
 }
 
+// Permit to search the location when pressing 'Enter' key
+let searchBar = document.getElementById('search-bar');
+
+searchBar.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        searchLocation();
+    }
+});
+
 // Search Bar
 function searchLocation() {
     let query = document.getElementById('search-bar').value;
@@ -107,7 +116,7 @@ function searchLocation() {
 
                 macarte.setView([lat, lon], 14);
 
-                let marker = L.marker([lat, lon]).addTo(macarte)
+                L.marker([lat, lon]).addTo(macarte)
                     .bindPopup(`<b>${result.display_name}</b>`)
                     .openPopup();
             } else {
@@ -179,6 +188,33 @@ function toggleGasLines() {
         gasLinesLayer.clearLayers();
     }
 }
+
+// let busLinesLayer = null;
+
+// function toggleBusLines() {
+//     if (busLinesLayer) {
+//         // If bus lines are already displayed, remove them from the map
+//         map.removeLayer(busLinesLayer);
+//         busLinesLayer = null;
+//     } else {
+//         // Fetch bus lines from the API
+//         fetch('/api/paths')
+//             .then(response => response.json())
+//             .then(data => {
+//                 const busLines = data.features.map(feature => {
+//                     const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+//                     return L.polyline(coordinates, {
+//                         color: feature.properties.color,
+//                         weight: 4
+//                     }).bindPopup(feature.properties.name);
+//                 });
+
+//                 busLinesLayer = L.layerGroup(busLines).addTo(map);
+//             })
+//             .catch(error => console.error('Error fetching bus lines:', error));
+//     }
+// }
+
 
 // Load map 
 window.onload = function() {

@@ -3,8 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Path;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Path>
@@ -16,28 +17,12 @@ class PathRepository extends ServiceEntityRepository
         parent::__construct($registry, Path::class);
     }
 
-    //    /**
-    //     * @return Path[] Returns an array of Path objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Path
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // public function findAllPaths(): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->select('p.id, p.name, p.color, ST_AsGeoJSON(p.path) AS path_geojson')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }
+

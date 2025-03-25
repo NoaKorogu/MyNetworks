@@ -28,11 +28,11 @@ class Structure
 
     #[ORM\ManyToOne(inversedBy: 'structures')]
     #[ORM\JoinColumn(nullable: false)]
-    protected ?Networks $network_id = null;
+    protected ?Networks $network = null;
 
     #[ORM\ManyToOne(inversedBy: 'structures')]
     #[ORM\JoinColumn(nullable: false)]
-    protected ?Type $type_id = null;
+    protected ?Type $type = null;
 
     /**
      * @var Collection<int, PartOf>

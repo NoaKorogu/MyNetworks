@@ -9,26 +9,14 @@
 
 {% block body %}
 
-    <script>
-        fetch('/api/networks')
-        .then(response => response.json())
-        .then(data => console.log('Network Names:', data))
-        .catch(error => console.error('Error fetching networks:', error));
-    </script>
-    <script>
-        fetch('/api/types')
-        .then(response => response.json())
-        .then(data => console.log('Types:', data))
-        .catch(error => console.error('Error fetching types:', error));
-    </script>
-
     <div id="app">
         <div id="sidebar">
             <button onclick="enableWaypointMode()">Créer un Waypoint</button>
+            <button onclick="enableDrawingMode()">Start Drawing Path</button>
+            <button onclick="finishDrawing()">Finish Drawing Path</button>
             <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()"> Afficher les lignes d'eau potable</label><br>
             <label><input type="checkbox" id="toggle-gas" onchange="toggleGasLines()"> Afficher les lignes de gaz</label><br>
-            <!-- Add button for displaying bus lines -->
-            <button onclick="toggleBusLines()">Afficher les lignes de bus</button>
+            <label><input type="checkbox" id="toggle-water" onchange="toggleBusLines()"> Afficher les lignes de bus</label><br>
         </div>
         <div id="map-container">
             <div id="map"></div>
@@ -42,5 +30,6 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
     <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" defer></script>
     <script src="{{ asset('js/map.js') }}" defer></script>
+    <script src="{{ asset('js/create_way.js') }}" defer></script>
 
 {% endblock %}

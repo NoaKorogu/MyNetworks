@@ -165,56 +165,38 @@ function fetchOSMData(query, layer) {
         .catch(error => console.error("Erreur lors du chargement des données OSM :", error));
 }
 
-function toggleWaterLines() {
-    if (document.getElementById("toggle-water").checked) {
-        let waterQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="water"];
-            out geom;`;
-        fetchOSMData(waterQuery, waterLinesLayer);
+let busLinesLayer = null;
+
+function toggleBusLines() {
+    if (busLinesLayer) {
+        // If bus lines are already displayed, remove them from the map
+        macarte.removeLayer(busLinesLayer);
+        busLinesLayer = null;
     } else {
-        waterLinesLayer.clearLayers();
+        // Fetch bus lines from the API
+        fetch('/api/paths')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.features || !Array.isArray(data.features)) {
+                    throw new Error('Invalid GeoJSON data');
+                }
+
+                // Create polylines for each feature
+                const busLines = data.features.map(feature => {
+                    const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    return L.polyline(coordinates, {
+                        color: feature.properties.color || 'blue', // Default color if not provided
+                        weight: 4
+                    }).bindPopup(feature.properties.name || 'Unnamed Bus Line');
+                });
+
+                // Create a LayerGroup and add it to the map
+                busLinesLayer = L.layerGroup(busLines);
+                macarte.addLayer(busLinesLayer); // Add the LayerGroup to the map
+            })
+            .catch(error => console.error('Error fetching bus lines:', error));
     }
 }
-
-function toggleGasLines() {
-    if (document.getElementById("toggle-gas").checked) {
-        let gasQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="gas"];
-            out geom;`;
-        fetchOSMData(gasQuery, gasLinesLayer);
-    } else {
-        gasLinesLayer.clearLayers();
-    }
-}
-
-// let busLinesLayer = null;
-
-// function toggleBusLines() {
-//     if (busLinesLayer) {
-//         // If bus lines are already displayed, remove them from the map
-//         map.removeLayer(busLinesLayer);
-//         busLinesLayer = null;
-//     } else {
-//         // Fetch bus lines from the API
-//         fetch('/api/paths')
-//             .then(response => response.json())
-//             .then(data => {
-//                 const busLines = data.features.map(feature => {
-//                     const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-//                     return L.polyline(coordinates, {
-//                         color: feature.properties.color,
-//                         weight: 4
-//                     }).bindPopup(feature.properties.name);
-//                 });
-
-//                 busLinesLayer = L.layerGroup(busLines).addTo(map);
-//             })
-//             .catch(error => console.error('Error fetching bus lines:', error));
-//     }
-// }
-
 
 // Load map 
 window.onload = function() {

@@ -11,7 +11,7 @@
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
-        "doctrine/orm": "^3.3",
+        "doctrine/orm": "^2.14",
         "jsor/doctrine-postgis": "^2.3",
         "longitude-one/doctrine-spatial": "^5.0",
         "phpdocumentor/reflection-docblock": "^5.6",

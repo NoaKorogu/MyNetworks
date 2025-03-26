@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PathRepository;
 use Doctrine\Common\Collections\Collection;
@@ -10,6 +11,7 @@ use LongitudeOne\Spatial\PHP\Types\Geometry\LineString;
 
 #[ORM\Entity(repositoryClass: PathRepository::class)]
 #[ORM\Table(name: "path")]
+#[ORM\HasLifecycleCallbacks]
 class Path
 {
     #[ORM\Id]
@@ -26,6 +28,15 @@ class Path
     #[ORM\Column(type: 'geometry', options: ['geometry_type' => 'LINESTRING'], nullable: false)]
     private ?LineString $path = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updated_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deleted_at = null;
+
     /**
      * @var Collection<int, PartOf>
      */
@@ -39,6 +50,19 @@ class Path
     public function __construct()
     {
         $this->partOfs = new ArrayCollection();
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updated_at = new \DateTime();
     }
 
     public function getId(): ?int
@@ -76,6 +100,27 @@ class Path
     public function setPath(?LineString $path): static
     {
         $this->path = $path;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): static
+    {
+        $this->deleted_at = $deleted_at;
         return $this;
     }
 

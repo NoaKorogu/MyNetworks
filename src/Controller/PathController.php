@@ -67,42 +67,43 @@ class PathController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_path', methods: ['GET'])]
-    public function getPath(Path $path): JsonResponse
+    public function getPath(PathRepository $pathRepository, int $id): JsonResponse
     {
+        $path = $pathRepository->findPathById($id);
+
+        if (!$path) {
+            return new JsonResponse(['error' => 'Path not found.'], Response::HTTP_NOT_FOUND);
+        }
+
         $geoJson = [
             'type' => 'Feature',
             'properties' => [
-                'id' => $path->getId(),
-                'name' => $path->getName(),
-                'color' => $path->getColor(),
+                'id' => $path[0]['id'],
+                'name' => $path[0]['name'],
+                'color' => $path[0]['color'],
             ],
-            'geometry' => json_decode($path->getPath()->toJson(), true),
+            'geometry' => json_decode($path[0]['path_geojson'], true),
         ];
 
         return new JsonResponse($geoJson);
     }
 
     #[Route('/{id}', name: 'update_path', methods: ['PUT'])]
-    public function updatePath(Request $request, Path $path): JsonResponse
+    public function updatePath(Request $request, int $id, PathRepository $pathRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-
-        if (isset($data['name'])) {
-            $path->setName($data['name']);
+    
+        // Extract name and color from the request body
+        $name = $data['name'] ?? null;
+        $color = $data['color'] ?? null;
+    
+        // Call the repository method to update the path
+        try {
+            $pathRepository->updatePath($id, $name, $color);
+            return new JsonResponse(['message' => 'Path updated successfully.']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        if (isset($data['color'])) {
-            $path->setColor($data['color']);
-        }
-
-        if (isset($data['coordinates']) && count($data['coordinates']) >= 2) {
-            $lineString = new LineString($data['coordinates']);
-            $path->setPath($lineString);
-        }
-
-        $this->entityManager->flush();
-
-        return new JsonResponse(['message' => 'Path updated successfully.']);
     }
 
     #[Route('/{id}', name: 'delete_path', methods: ['DELETE'])] //It works but soft delete only the path withoout deleting the path in the collection of path in Networks and PartOf entity

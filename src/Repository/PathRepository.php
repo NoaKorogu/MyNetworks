@@ -25,6 +25,16 @@ class PathRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findPathById(int $id): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.id, p.name, p.color, ST_AsGeoJSON(p.path) AS path_geojson')
+            ->where('p.deleted_at IS NULL AND p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function createPath(string $name, string $color, array $coordinates, ?int $networkId = null): void
     {
         // Convert coordinates array to WKT format
@@ -60,4 +70,33 @@ class PathRepository extends ServiceEntityRepository
             ['id' => \PDO::PARAM_INT]
         );
     }
+
+    public function updatePath(int $id, ?string $name, ?string $color): void
+    {
+        // Build the SQL query dynamically based on provided parameters
+        $fieldsToUpdate = [];
+        $parameters = ['id' => $id];
+
+        if ($name !== null) {
+            $fieldsToUpdate[] = 'name = :name';
+            $parameters['name'] = $name;
+        }
+
+        if ($color !== null) {
+            $fieldsToUpdate[] = 'color = :color';
+            $parameters['color'] = $color;
+        }
+
+        if (empty($fieldsToUpdate)) {
+            throw new \InvalidArgumentException('No fields to update.');
+        }
+
+        $sql = sprintf(
+            'UPDATE path SET %s, updated_at = NOW() WHERE id = :id',
+            implode(', ', $fieldsToUpdate)
+        );
+
+        $this->_em->getConnection()->executeStatement($sql, $parameters);
+    }
+
 }

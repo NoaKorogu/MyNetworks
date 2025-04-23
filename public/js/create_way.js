@@ -16,17 +16,17 @@ function initializeDrawingFeatures() {
             macarte.removeLayer(drawnPolyline);
             drawnPolyline = null;
         }
-        alert('Drawing mode enabled. Click on the map to add points.');
+        alert('Cliquez sur la carte pour créer un point.');
     }
 
     // Disable drawing mode
-    function disableDrawingMode() {
+    function disableDrawingMode(error) {
         drawingMode = false;
         if (drawnPolyline) {
             macarte.removeLayer(drawnPolyline);
             drawnPolyline = null;
         }
-        alert('Drawing mode disabled.');
+        alert(error);
     }
 
     // Handle map clicks to collect coordinates
@@ -48,21 +48,26 @@ function initializeDrawingFeatures() {
 
     // Ask the user for path details and submit the drawn path to the backend
     function finishDrawing() {
+        if (drawnCoordinates.length === 0) {
+            disableDrawingMode("Aucun point dessiné. Fin de la création de chemin.");
+            return;
+        }
+
         if (drawnCoordinates.length < 2) {
-            alert('A path must have at least two points.');
+            disableDrawingMode("Un chemin doit avoir au moins 2 points.");
             return;
         }
 
         // Prompt the user for the path name and color
-        const name = prompt('Enter the name of the path:', 'Unnamed Path');
+        const name = prompt('Entrer le nom du chemin:', 'Mon chemin');
         if (!name) {
-            alert('Path creation canceled.');
+            disableDrawingMode('Création du chemin annulé.');
             return;
         }
 
-        const color = prompt('Enter the color of the path (e.g., #FF5733):', '#0000FF');
+        const color = prompt('Choisir la couleur du chemin (e.g., #FF5733):', '#0000FF');
         if (!color) {
-            alert('Path creation canceled.');
+            disableDrawingMode('Création du chemin annulé.');
             return;
         }
 
@@ -87,12 +92,12 @@ function initializeDrawingFeatures() {
                 return response.json();
             })
             .then(data => {
-                alert('Path saved successfully!');
+                alert('Chemin crée avec succes !');
                 disableDrawingMode();
             })
             .catch(error => {
                 console.error('Error saving path:', error);
-                alert('Error saving path.');
+                alert('Erreur lors de la création du chemin.');
             });
     }
 

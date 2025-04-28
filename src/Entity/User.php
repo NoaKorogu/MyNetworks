@@ -4,12 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -53,6 +54,11 @@ class User implements PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
+    public function getRoles(): array
+    {
+        return [$this->role];
+    }
+
     public function getRole(): string
     {
         return $this->role;
@@ -81,6 +87,11 @@ class User implements PasswordAuthenticatedUserInterface
         $this->password = $password;
 
         return $this;
+    }
+
+    public function getSalt(): ?string
+    {
+        return null; // Pas nécessaire avec bcrypt ou argon2
     }
 
     public function eraseCredentials(): void

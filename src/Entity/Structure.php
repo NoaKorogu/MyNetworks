@@ -76,24 +76,24 @@ class Structure
 
     public function getNetworkId(): ?Networks
     {
-        return $this->network_id;
+        return $this->network;
     }
 
     public function setNetworkId(?Networks $network_id): static
     {
-        $this->network_id = $network_id;
+        $this->network = $network_id;
 
         return $this;
     }
 
     public function getNetworkTypeId(): ?Type
     {
-        return $this->type_id;
+        return $this->type;
     }
 
     public function setNetworkTypeId(?Type $type_id): static
     {
-        $this->type_id = $type_id;
+        $this->type = $type_id;
 
         return $this;
     }

@@ -5,6 +5,7 @@
         "@babel/preset-react": "^7.26.3",
         "@symfony/webpack-encore": "^5.1.0",
         "autoprefixer": "^10.4.21",
+        "@symfony/webpack-encore": "^5.0.0",
         "core-js": "^3.38.0",
         "postcss": "^8.5.3",
         "regenerator-runtime": "^0.13.9",
@@ -26,5 +27,4 @@
         "leaflet": "^1.9.4",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
-    }
 }

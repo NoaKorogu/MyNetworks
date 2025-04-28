@@ -11,12 +11,23 @@
 
     <div id="app">
         <div id="sidebar">
-            <button onclick="enableWaypointMode()">Créer un Waypoint</button>
-            <button onclick="enableDrawingMode()">Créer un chemin</button>
-            <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
-            <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()"> Afficher les lignes d'eau potable</label><br>
-            <label><input type="checkbox" id="toggle-gas" onchange="toggleGasLines()"> Afficher les lignes de gaz</label><br>
-            <label><input type="checkbox" id="toggle-bus" onchange="toggleBusLines()"> Afficher les lignes de bus</label><br>
+            {% if app.user %}
+                <button onclick="enableWaypointMode()">Créer un Waypoint</button>
+                <button onclick="enableDrawingMode()">Créer un chemin</button>
+                <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
+            {% endif %}
+            <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()" 
+                {% if not (is_granted('ROLE_EDF') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les lignes d'électricité
+            </label><br>
+            <label><input type="checkbox" id="toggle-gas" onchange="toggleGasLines()" 
+                {% if not (is_granted('ROLE_WATER') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les lignes d'eau
+            </label><br>
+            <label><input type="checkbox" id="toggle-bus" onchange="toggleBusLines()" 
+                {% if not (is_granted('ROLE_FILIBUS') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les lignes de bus
+            </label><br>
         </div>
         <div id="map-container">
             <div id="map"></div>

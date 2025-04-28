@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "content-hash": "b75f73bd50ec3767015dc166ba627ff5",
+
     "packages": [
         {
             "name": "beberlei/doctrineextensions",
@@ -10398,7 +10399,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -10406,6 +10407,6 @@
         "ext-ctype": "*",
         "ext-iconv": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

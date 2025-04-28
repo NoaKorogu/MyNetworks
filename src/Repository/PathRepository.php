@@ -34,6 +34,16 @@ class PathRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findLastPath(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.id, p.name, p.color, ST_AsGeoJSON(p.path) AS path_geojson')
+            ->where('p.deleted_at IS NULL')
+            ->orderBy('p.created_at', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+    }
 
     public function createPath(string $name, string $color, array $coordinates, ?int $networkId = null): void
     {

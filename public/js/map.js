@@ -244,32 +244,35 @@ function modifyPathName(pathId) {
 }
 
 function modifyPathColor(pathId) {
-    const newColor = prompt('Entrez la nouvelle couleur du chemin (e.g., #FF5733) :');
-    if (!newColor) {
-        alert('Modification annulée.');
-        return;
-    }
-
-    fetch(`/api/paths/${pathId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ color: newColor }),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to modify path color.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Couleur du chemin modifiée avec succès !');
-            updatePathOnMap(pathId);
+    // Use the reusable color picker
+    showColorPicker()
+        .then(newColor => {
+            // Send the updated color to the backend
+            fetch(`/api/paths/${pathId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ color: newColor }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to modify path color.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Couleur du chemin modifiée avec succès !');
+                    updatePathOnMap(pathId); // Refresh the path on the map
+                })
+                .catch(error => {
+                    console.error('Error modifying path color:', error);
+                    alert('Erreur lors de la modification de la couleur du chemin.');
+                });
         })
         .catch(error => {
-            console.error('Error modifying path color:', error);
-            alert('Erreur lors de la modification de la couleur du chemin.');
+            console.log(error);
+            alert('Modification annulée.');
         });
 }
 
@@ -293,7 +296,7 @@ function deletePath(pathId) {
         })
         .then(data => {
             alert('Chemin supprimé avec succès !');
-            toggleBusLines(); // Refresh the bus lines layer
+            refreshBusLines();
         })
         .catch(error => {
             console.error('Error deleting path:', error);
@@ -344,6 +347,55 @@ function toggleBusLines() {
             })
             .catch(error => console.error('Error fetching bus lines:', error));
     }
+}
+
+function refreshBusLines() {
+    const checkbox = document.getElementById('toggle-bus'); // Reference the checkbox
+    if (!checkbox.checked) {
+        // If the checkbox is not checked, do nothing
+        return;
+    }
+    
+    if (busLinesLayer) {
+        // Remove the existing layer
+        macarte.removeLayer(busLinesLayer);
+        busLinesLayer = null;
+    }
+
+    // Fetch and display the bus lines again
+    fetch('/api/paths')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.features || !Array.isArray(data.features)) {
+                throw new Error('Invalid GeoJSON data');
+            }
+
+            // Create polylines for each feature
+            const busLines = data.features.map(feature => {
+                const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                const polyline = L.polyline(coordinates, {
+                    color: feature.properties.color || 'blue', // Default color if not provided
+                    weight: 4
+                });
+
+                // Bind a popup with buttons for modifying or deleting the path
+                polyline.bindPopup(`
+                    <div id="button-container">
+                        <b>${feature.properties.name || 'Unnamed Bus Line'}</b><br>
+                        <button onclick="modifyPathName(${feature.properties.id})">Modifier le nom</button><br>
+                        <button onclick="modifyPathColor(${feature.properties.id})">Modifier la couleur</button><br>
+                        <button onclick="deletePath(${feature.properties.id})">Supprimer</button>
+                    </div>
+                `);
+
+                return polyline;
+            });
+
+            // Create a LayerGroup and add it to the map
+            busLinesLayer = L.layerGroup(busLines);
+            macarte.addLayer(busLinesLayer); // Add the LayerGroup to the map
+        })
+        .catch(error => console.error('Error refreshing bus lines:', error));
 }
 
 // Load map 

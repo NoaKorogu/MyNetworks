@@ -66,7 +66,29 @@ class PathController extends AbstractController
         return new JsonResponse($geoJson);
     }
 
-    #[Route('/{id}', name: 'get_path', methods: ['GET'])]
+    #[Route('/last', name: 'get_last_path', methods: ['GET'])]
+    public function getLastPath(PathRepository $pathRepository): JsonResponse
+    {
+        $path = $pathRepository->findLastPath();
+
+        if (!$path) {
+            return new JsonResponse(['error' => 'No paths found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $geoJson = [
+            'type' => 'Feature',
+            'properties' => [
+                'id' => $path[0]['id'],
+                'name' => $path[0]['name'],
+                'color' => $path[0]['color'],
+            ],
+            'geometry' => json_decode($path[0]['path_geojson'], true),
+        ];
+
+        return new JsonResponse($geoJson);
+    }
+
+    #[Route('/{id}', name: 'get_path', methods: ['GET'])] //It works
     public function getPath(PathRepository $pathRepository, int $id): JsonResponse
     {
         $path = $pathRepository->findPathById($id);

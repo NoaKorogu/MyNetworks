@@ -2,23 +2,19 @@
 
 {% block title %}Carte{% endblock %}
 
-{% block stylesheets %} 
+{% block stylesheets %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ asset('css/map.css') }}">
 {% endblock %}
 
 {% block body %}
-    <script>
-    fetch('/api/networks')
-        .then(response => response.json())
-        .then(data => console.log('Network Names:', data))
-        .catch(error => console.error('Error fetching networks:', error));
-</script>
 
     <div id="app">
         <div id="sidebar">
             {% if app.user %}
                 <button onclick="enableWaypointMode()">Créer un Waypoint</button>
+                <button onclick="enableDrawingMode()">Créer un chemin</button>
+                <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
             {% endif %}
             <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()" 
                 {% if not (is_granted('ROLE_EDF') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
@@ -44,5 +40,8 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
     <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" defer></script>
+    <script src="{{ asset('js/component/color_picker.js') }}" defer></script>
     <script src="{{ asset('js/map.js') }}" defer></script>
+    <script type="module" src="{{ asset('js/create_way.js') }}" defer></script>
+
 {% endblock %}

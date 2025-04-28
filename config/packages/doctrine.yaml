@@ -5,8 +5,9 @@ doctrine:
         driver: 'pdo_pgsql'
         server_version: '16'
         types:
-            geography: Jsor\Doctrine\PostGIS\Types\GeographyType
-            geometry: Jsor\Doctrine\PostGIS\Types\GeometryType
+            geography: LongitudeOne\Spatial\DBAL\Types\GeographyType
+            geometry: LongitudeOne\Spatial\DBAL\Types\GeometryType
+        logging: true
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
@@ -32,6 +33,10 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+
+        dql:
+            string_functions:
+                ST_AsGeoJSON: Jsor\Doctrine\PostGIS\Functions\ST_AsGeoJSON
 
 when@test:
     doctrine:

@@ -41,7 +41,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 - PHP 8.x
 - Composer
 - PostgreSQL avec PostGIS
-- Node.js et npm (pour le frontend)
+- Node.js
 - Symfony CLI
 - Nginx
 

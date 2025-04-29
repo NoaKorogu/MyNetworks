@@ -18,6 +18,8 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
   - Création, modification et suppression des éléments du réseau
   - Ajout d'informations comme le nom, le type et d'autres détails utiles
 - 👤 **Gestion des utilisateurs et des rôles**
+- ⏳ **Historique des modifications** :
+   - Retrouver les versions antérieures d'un élément
 - 🔍 **Filtrage des réseaux** :
   - Masquer ou afficher un ou plusieurs réseaux
 

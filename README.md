@@ -64,7 +64,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
    - Modifier la variable `DATABASE_URL` :
      ```env
-     DATABASE_URL="postgresql://user:password@127.0.0.1:5432/my_network_db?serverVersion=16"
+     DATABASE_URL="postgresql://user:password@127.0.0.1:5432/my_network_db?serverVersion=16&charset=utf8"
      ```
 
 4. **Créer la base et les tables**

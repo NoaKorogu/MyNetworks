@@ -82,7 +82,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
 6. **Accéder à l'application**
 
-   -Ouvrez votre navigateur et accédez à http://localhost:8000 :
+   - Ouvrez votre navigateur et accédez à http://localhost:8000
 
 ---
 

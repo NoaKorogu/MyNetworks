@@ -294,9 +294,22 @@ function deletePath(pathId) {
             }
             return response.json();
         })
-        .then(data => {
+        .then(() => {
             alert('Chemin supprimé avec succès !');
-            refreshBusLines();
+
+            if (busLinesLayer) {
+                let pathRemoved = false; // Track if the path was removed
+                busLinesLayer.eachLayer(layer => {
+                    if (layer.id === pathId) {
+                        busLinesLayer.removeLayer(layer); // Remove the specific path from the map
+                        pathRemoved = true;
+                    }
+                });
+
+                if (!pathRemoved) {
+                    console.warn(`Path with ID ${pathId} was not found in the busLinesLayer.`);
+                }
+            }
         })
         .catch(error => {
             console.error('Error deleting path:', error);
@@ -327,7 +340,10 @@ function toggleBusLines() {
                         color: feature.properties.color || 'blue', // Default color if not provided
                         weight: 4
                     });
-
+                    
+                    // Attach the feature object to the polyline
+                    polyline.feature = feature;
+                    
                     // Bind a popup with buttons for modifying or deleting the path
                     polyline.bindPopup(`
                         <div id="button-container">
@@ -355,7 +371,7 @@ function refreshBusLines() {
         // If the checkbox is not checked, do nothing
         return;
     }
-    
+
     if (busLinesLayer) {
         // Remove the existing layer
         macarte.removeLayer(busLinesLayer);
@@ -377,7 +393,10 @@ function refreshBusLines() {
                     color: feature.properties.color || 'blue', // Default color if not provided
                     weight: 4
                 });
-
+                
+                // Attach the feature object to the polyline
+                polyline.feature = feature;
+                
                 // Bind a popup with buttons for modifying or deleting the path
                 polyline.bindPopup(`
                     <div id="button-container">

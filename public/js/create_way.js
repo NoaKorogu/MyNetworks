@@ -102,10 +102,11 @@ function initializeDrawingFeatures() {
                             .then(response => response.json())
                             .then(pathData => {
                                 const coordinates = pathData.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                                const polyline = L.polyline(coordinates, {
+                                let polyline = L.polyline(coordinates, {
                                     color: pathData.properties.color || 'blue',
                                     weight: 4,
                                 });
+                                polyline.id = pathData.properties.id; // Store the path ID for later use
 
                                 // Bind a popup with buttons for modifying or deleting the path
                                 polyline.bindPopup(`

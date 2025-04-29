@@ -18,8 +18,6 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
   - Création, modification et suppression des éléments du réseau
   - Ajout d'informations comme le nom, le type et d'autres détails utiles
 - 👤 **Gestion des utilisateurs et des rôles**
-- ⏳ **Historique des modifications** :
-  - Retrouver les versions antérieures d'un élément
 - 🔍 **Filtrage des réseaux** :
   - Masquer ou afficher un ou plusieurs réseaux
 
@@ -29,9 +27,9 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
 - **Backend** : Symfony 7.x
 - **Base de données** : PostgreSQL + PostGIS
-- **Frontend** : React avec Leaflet.js
+- **Frontend** : Twig et Leaflet.js pour la map
 - **Serveur Web** : Nginx
-- **Authentification** : JWT ( a verifier)
+- **Authentification** : CSRF
 - **Gestion des requêtes spatiales** : Doctrine avec longitude-one/doctrine-spatial
 
 ---
@@ -44,7 +42,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 - Composer
 - PostgreSQL avec PostGIS
 - Node.js et npm (pour le frontend)
-- Symfony CLI (optionnel, mais recommandé)
+- Symfony CLI
 - Nginx
 
 ### 🛠 Configuration et installation
@@ -64,7 +62,6 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
 3. **Configurer la base de données**
 
-   - Renommer `.env.example` en `.env`
    - Modifier la variable `DATABASE_URL` :
      ```env
      DATABASE_URL="postgresql://user:password@127.0.0.1:5432/my_network_db?serverVersion=16"
@@ -83,34 +80,12 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
    symfony server:start
    ```
 
-6. **Frontend : Installer et démarrer l'interface utilisateur**
+6. **Accéder à l'application**
 
-   ```sh
-   cd frontend
-   npm install
-   npm start
-   ```
-
-7. **Accéder à l'application**
-
-   - Frontend : [http://localhost:3000](http://localhost:3000)
-   - API : [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
+   -Ouvrez votre navigateur et accédez à http://localhost:8000.
 
 ---
 
-## 📊 Modèle de données (Simplifié)
+## 📊 Dump de la base de données (a ajouter)
 
-### 🏢 Table `network` (Réseaux)
 
-| ID | Nom         |
-| -- | ----------- |
-| 1  | Transport   |
-| 2  | Énergie     |
-| 3  | Eau potable |
-
-### 📍 Table `structure` (Points d'intérêt et tracés)
-
-| ID | Nom       | Location (PostGIS) | Type      | Network     |
-| -- | --------- | ------------------ | --------- | ----------- |
-| 1  | Fontaine  | POINT(...)         | Eau       | Eau potable |
-| 2  | Arrêt Bus | POINT(...)         | Transport | Transport   |

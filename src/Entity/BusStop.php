@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: "bus_stop")]
 class BusStop extends Structure
 {
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $line_number = null;
 
     public function getLineNumber(): ?string

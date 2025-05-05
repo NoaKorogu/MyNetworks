@@ -3,6 +3,13 @@ let macarte = null;
 let waypointMode = false;
 let waypoints = [];
 let waterLinesLayer, gasLinesLayer;
+const userRole = document.getElementById('map').dataset.role;
+
+const roleToNetwork = {
+    'ROLE_EDF': 1,      // Network ID 1 pour EDF
+    'ROLE_WATER': 2,    // Network ID 2 pour Water
+    'ROLE_FILIBUS': 3   // Network ID 3 pour Filibus
+};
 
 // Define waypoint appearance
 let customIcon = L.icon({
@@ -52,17 +59,72 @@ function createWaypoint(latlng) {
         lat: latlng.lat,
         lon: latlng.lng,
         marker: marker,
-        name: "Nouveau Waypoint"
+        name: "Nouveau Waypoint",
+        networkId: userNetworkId
     };
     waypoints.push(waypoint);
+
+    // Définir les options de structure en fonction du networkId
+    const structureOptions = {
+        1: ['electrical'], // ROLE_EDF
+        2: ['water'],      // ROLE_WATER
+        3: ['bus_stop']    // ROLE_FILIBUS
+    };
+
+    const options = structureOptions[userNetworkId] || [];
+    const selectOptions = options.map(option => `<option value="${option}">${option}</option>`).join('');
+    const selectMenu = `
+        <select id="structure-select-${waypoints.length - 1}">
+            ${selectOptions}
+        </select>
+    `;
 
     marker.bindPopup(`
         <div>
             <b>${waypoint.name}</b><br>
-            <button onclick="editWaypoint(${waypoints.length - 1})">Modifier le nom</button><br>
+            ${selectMenu}<br>
+            <button onclick="saveStructure(${waypoints.length - 1})">Sauvegarder</button><br>
             <button onclick="deleteWaypoint(${waypoints.length - 1})">Supprimer</button>
         </div>
     `).openPopup();
+}
+
+function saveStructure(index) {
+    const waypoint = waypoints[index];
+    const selectElement = document.getElementById(`structure-select-${index}`);
+    const selectedType = selectElement.value;
+
+    if (!selectedType) {
+        alert("Veuillez sélectionner une structure.");
+        return;
+    }
+
+    // Envoyer les données au backend
+    fetch('/api/structures', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            lat: waypoint.lat,
+            lon: waypoint.lon,
+            name: waypoint.name,
+            networkId: waypoint.networkId,
+            type: selectedType
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Structure sauvegardée avec succès !");
+            } else {
+                alert("Erreur lors de la sauvegarde : " + (data.error || "Inconnue"));
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors de la sauvegarde :", error);
+            alert("Erreur lors de la sauvegarde. Veuillez réessayer.");
+        });
 }
 
 // Edit waypoint name

@@ -11,7 +11,7 @@ class Water extends Structure
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $water_pressure = null;
 
-    #[ORM\Column(type: "boolean", options: ["default" => true])]
+    #[ORM\Column(type: "boolean", nullable: true,  options: ["default" => true])]
     private bool $is_open = true;
 
     public function getWaterPressure(): ?string

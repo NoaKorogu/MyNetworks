@@ -12,9 +12,14 @@
     <div id="app">
         <div id="sidebar">
             {% if app.user %}
+                <div id="mapRole" data-role="{{ app.user.roles[0] }}"></div>
+                <button onclick="window.location.href='{{ path('app_logout') }}'">Se déconnecter</button>
                 <button onclick="enableWaypointMode()">Créer un Waypoint</button>
+                <button id="placeStructureButton" onclick="enableStructureMode()">Placer une structure</button>
                 <button onclick="enableDrawingMode()">Créer un chemin</button>
                 <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
+            {% else %}
+                <button onclick="window.location.href='{{ path('app_login') }}'">Se connecter</button>
             {% endif %}
             <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()" 
                 {% if not (is_granted('ROLE_EDF') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
@@ -30,7 +35,7 @@
             </label><br>
         </div>
         <div id="map-container">
-            <div id="map"></div>
+        <div id="map"></div>
             <div id="search-bar-container">
                 <input type="text" id="search-bar" placeholder="Rechercher un lieu..." />
                 <button id="search-button" onclick="searchLocation()">Rechercher</button>
@@ -38,10 +43,12 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
-    <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" defer></script>
-    <script src="{{ asset('js/component/color_picker.js') }}" defer></script>
-    <script src="{{ asset('js/map.js') }}" defer></script>
-    <script type="module" src="{{ asset('js/create_way.js') }}" defer></script>
-
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" ></script>
+    <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" ></script>
+    <script src="{{ asset('js/component/color_picker.js') }}" ></script>
+    <script src="{{ asset('js/map.js') }}" ></script>
+    {% if app.user %}
+        <script src="{{ asset('js/create_way.js') }}" ></script>
+        <script src="{{ asset('js/create_structure.js') }}" ></script>
+    {% endif %}
 {% endblock %}

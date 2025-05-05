@@ -4,11 +4,13 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Entity\Networks;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -31,14 +33,34 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
-            // Hachez le mot de passe avant de l'enregistrer
+            // Définir le réseau en fonction du rôle
+            $roleToNetwork = [
+                'ROLE_EDF' => 1,
+                'ROLE_WATER' => 2,
+                'ROLE_FILIBUS' => 3,
+                'ROLE_ADMIN' => 4,
+            ];
+    
+            $role = $user->getRole();
+            if (!isset($roleToNetwork[$role])) {
+                return new JsonResponse(['error' => 'Invalid role.'], Response::HTTP_BAD_REQUEST);
+            }
+    
+            $network = $entityManager->getRepository(Networks::class)->find($roleToNetwork[$role]);
+            if (!$network) {
+                return new JsonResponse(['error' => 'Network not found for the given role.'], Response::HTTP_BAD_REQUEST);
+            }
+    
+            $user->setNetwork($network);
+    
+            // Hacher le mot de passe avant de l'enregistrer
             $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
             $user->setPassword($hashedPassword);
     
             $entityManager->persist($user);
             $entityManager->flush();
     
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_login', [], Response::HTTP_SEE_OTHER);
         }
     
         return $this->render('user/new.html.twig', [

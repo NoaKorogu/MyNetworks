@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: "electrical")]
 class Electrical extends Structure
 {
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $capacity = null;
 
     public function getCapacity(): ?string

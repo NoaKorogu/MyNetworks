@@ -31,10 +31,14 @@ class Networks
     #[ORM\OneToMany(targetEntity: Path::class, mappedBy: 'network_id')]
     private Collection $paths;
 
+    #[ORM\OneToMany(targetEntity: Type::class, mappedBy: 'network')]
+    private Collection $types;
+
     public function __construct()
     {
         $this->structures = new ArrayCollection();
         $this->paths = new ArrayCollection();
+        $this->types = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -103,6 +107,30 @@ class Networks
     {
         if ($this->paths->removeElement($path) && $path->getNetworkId() === $this) {
             $path->setNetworkId(null);
+        }
+
+        return $this;
+    }
+
+    public function getTypes(): Collection
+    {
+        return $this->types;
+    }
+
+    public function addType(Type $type): static
+    {
+        if (!$this->types->contains($type)) {
+            $this->types->add($type);
+            $type->setNetwork($this);
+        }
+
+        return $this;
+    }
+
+    public function removeType(Type $type): static
+    {
+        if ($this->types->removeElement($type) && $type->getNetwork() === $this) {
+            $type->setNetwork(null);
         }
 
         return $this;

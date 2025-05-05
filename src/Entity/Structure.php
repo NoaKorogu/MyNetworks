@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\StructureRepository;
 use Doctrine\Common\Collections\Collection;
@@ -20,10 +21,19 @@ class Structure
     #[ORM\Column]
     protected ?int $id = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updated_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deleted_at = null;
+
     #[ORM\Column(length: 128)]
     protected ?string $name = null;
 
-    #[ORM\Column(type: "geography", options: ["geometry_type" => "POINT", "srid" => 4326])]
+    #[ORM\Column(type: "geometry")]
     protected ?Point $location = null;
 
     #[ORM\ManyToOne(inversedBy: 'structures')]
@@ -40,6 +50,11 @@ class Structure
     #[ORM\ManyToMany(targetEntity: PartOf::class, mappedBy: 'structure_id')]
     private Collection $partOfs;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $createdBy = null;
+
+
     public function __construct()
     {
         $this->partOfs = new ArrayCollection();
@@ -48,6 +63,38 @@ class Structure
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(): void
+    {
+        $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(): void
+    {
+        $this->updated_at = new \DateTime();
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): static
+    {
+        $this->deleted_at = $deleted_at;
+        return $this;
     }
 
     public function getName(): ?string
@@ -76,24 +123,24 @@ class Structure
 
     public function getNetworkId(): ?Networks
     {
-        return $this->network;
+        return $this->network_id;
     }
 
     public function setNetworkId(?Networks $network_id): static
     {
-        $this->network = $network_id;
+        $this->network_id = $network_id;
 
         return $this;
     }
 
     public function getNetworkTypeId(): ?Type
     {
-        return $this->type;
+        return $this->type_id;
     }
 
     public function setNetworkTypeId(?Type $type_id): static
     {
-        $this->type = $type_id;
+        $this->type_id = $type_id;
 
         return $this;
     }
@@ -121,6 +168,18 @@ class Structure
         if ($this->partOfs->removeElement($partOf)) {
             $partOf->removeStructureId($this);
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $user): static
+    {
+        $this->createdBy = $user;
 
         return $this;
     }

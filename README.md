@@ -60,6 +60,8 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
    ```sh
    composer install
+   npm run prod
+   npm run build
    ```
 
 3. **Configurer la base de données**

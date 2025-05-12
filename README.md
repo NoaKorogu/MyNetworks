@@ -93,6 +93,6 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 ## 📊 Dump de la base de données (a ajouter)
 **⚠️ En priorité :**
 
--network -> créer des user
--type -> créer des structures
+- network -> créer des user
+- type -> créer des structures
 

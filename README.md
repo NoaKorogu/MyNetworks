@@ -62,7 +62,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
    composer install
    npm install @symfony/webpack-encore
    npx encore dev
-   npm run prod
+   npm run dev
    npm run build
    ```
 

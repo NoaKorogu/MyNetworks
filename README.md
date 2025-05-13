@@ -82,7 +82,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
    
 5. **Installer Postgis dans la DB**
    - Se connecter a la DB
-    ```sh
+    ```sql
    create extension if not exists postgis;
    ```
    - Faire la migration

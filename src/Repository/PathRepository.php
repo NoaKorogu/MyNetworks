@@ -109,6 +109,7 @@ class PathRepository extends ServiceEntityRepository
     //     $this->_em->getConnection()->executeStatement($sql, $parameters);
     // }
 
+    public function updatePath(int $id, ?string $name, ?string $color): void // Create a log when a path is updated
     {
         $path = $this->find($id);
         if (!$path) {

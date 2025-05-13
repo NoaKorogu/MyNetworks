@@ -81,32 +81,68 @@ class PathRepository extends ServiceEntityRepository
         );
     }
 
-    public function updatePath(int $id, ?string $name, ?string $color): void
-    {
-        // Build the SQL query dynamically based on provided parameters
-        $fieldsToUpdate = [];
-        $parameters = ['id' => $id];
+    // public function updatePath(int $id, ?string $name, ?string $color): void
+    // {
+    //     // Build the SQL query dynamically based on provided parameters
+    //     $fieldsToUpdate = [];
+    //     $parameters = ['id' => $id];
 
+    //     if ($name !== null) {
+    //         $fieldsToUpdate[] = 'name = :name';
+    //         $parameters['name'] = $name;
+    //     }
+
+    //     if ($color !== null) {
+    //         $fieldsToUpdate[] = 'color = :color';
+    //         $parameters['color'] = $color;
+    //     }
+
+    //     if (empty($fieldsToUpdate)) {
+    //         throw new \InvalidArgumentException('No fields to update.');
+    //     }
+
+    //     $sql = sprintf(
+    //         'UPDATE path SET %s, updated_at = NOW() WHERE id = :id',
+    //         implode(', ', $fieldsToUpdate)
+    //     );
+
+    //     $this->_em->getConnection()->executeStatement($sql, $parameters);
+    // }
+
+    public function updatePath(int $id, ?string $name, ?string $color): void // Doit créer un log si un chemin est modifié
+    {
+        $path = $this->find($id);
+        if (!$path) {
+            throw new \InvalidArgumentException('Path not found.');
+        }
+
+        // Capture old data
+        $oldData = [
+            'name' => $path->getName(),
+            'color' => $path->getColor(),
+        ];
+
+        // Update the entity
         if ($name !== null) {
-            $fieldsToUpdate[] = 'name = :name';
-            $parameters['name'] = $name;
+            $path->setName($name);
         }
 
         if ($color !== null) {
-            $fieldsToUpdate[] = 'color = :color';
-            $parameters['color'] = $color;
+            $path->setColor($color);
         }
 
-        if (empty($fieldsToUpdate)) {
-            throw new \InvalidArgumentException('No fields to update.');
-        }
+        // Capture new data
+        $newData = [
+            'name' => $path->getName(),
+            'color' => $path->getColor(),
+        ];
 
-        $sql = sprintf(
-            'UPDATE path SET %s, updated_at = NOW() WHERE id = :id',
-            implode(', ', $fieldsToUpdate)
-        );
+        // Persist the changes
+        $this->_em->persist($path);
+        $this->_em->flush();
 
-        $this->_em->getConnection()->executeStatement($sql, $parameters);
+        // Log the update
+        $this->databaseService->logAction('path', $id, $oldData, $newData);
     }
 
 }

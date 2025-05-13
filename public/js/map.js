@@ -305,9 +305,8 @@ function deletePath(pathId) {
                         pathRemoved = true;
                     }
                 });
-
                 if (!pathRemoved) {
-                    console.warn(`Path with ID ${pathId} was not found in the busLinesLayer.`);
+                    alert('Le chemin n\'a pas été trouvé sur la carte.');
                 }
             }
         })

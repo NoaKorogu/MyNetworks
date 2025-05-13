@@ -105,6 +105,11 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 ## 📊 Dump de la base de données (a ajouter)
 **⚠️ En priorité :**
 
-- network -> créer des user
+```sql
+INSERT INTO network(name) VALUES ('Electricité');
+INSERT INTO network(name) VALUES ('Eau');
+INSERT INTO network(name) VALUES ('Bus');
+INSERT INTO network(name) VALUES ('Admin');
+```
 - type -> créer des structures
 

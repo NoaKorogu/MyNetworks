@@ -60,6 +60,8 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
    ```sh
    composer install
+   npm install @symfony/webpack-encore
+   npx encore dev
    npm run prod
    npm run build
    ```

@@ -117,7 +117,7 @@ class Log
         $this->id_element = $id_element;
         $this->old_data = $old_data;
         $this->new_data = $new_data;
-        $this->updated_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
         $this->user = $user;
 
         return $this;

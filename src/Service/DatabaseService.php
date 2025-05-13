@@ -4,23 +4,28 @@ namespace App\Service;
 
 use App\Entity\Log;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class DatabaseService
 {
     private EntityManagerInterface $entityManager;
-    private Security $security;
+    private TokenStorageInterface $tokenStorage;
 
-    public function __construct(EntityManagerInterface $entityManager, Security $security)
+    public function __construct(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage)
     {
         $this->entityManager = $entityManager;
-        $this->security = $security;
+        $this->tokenStorage = $tokenStorage;
     }
 
     public function logAction(string $tableName, int $idElement, array $oldData, array $newData): void
     {
-        $currentUser = $this->security->getUser(); // Get the currently authenticated user
-        // $currentUser = $this->entityManager->getRepository(User::class)->find(1); // Replace with actual user retrieval logic
+        // Get the currently authenticated user from the token
+        $token = $this->tokenStorage->getToken();
+        $currentUser = $token ? $token->getUser() : null;
+
+        if (!$currentUser) {
+            throw new \RuntimeException('No authenticated user found.');
+        }
 
         $log = new Log();
         $log->createNewLog(

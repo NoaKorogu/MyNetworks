@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250505093301 extends AbstractMigration
+final class Version20250507115230 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -57,7 +57,7 @@ final class Version20250505093301 extends AbstractMigration
             CREATE INDEX IDX_B548B0F34128B91 ON path (network_id)
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE structure (id SERIAL NOT NULL, network_id INT NOT NULL, type_id INT NOT NULL, created_by_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, deleted_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, name VARCHAR(128) NOT NULL, location geometry(GEOMETRY, 0) NOT NULL, discriminator VARCHAR(255) NOT NULL, PRIMARY KEY(id))
+            CREATE TABLE structure (id SERIAL NOT NULL, network_id INT NOT NULL, type_id INT NOT NULL, created_by_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, deleted_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, name VARCHAR(128) NOT NULL, location geometry(POINT, 4326) DEFAULT NULL, discriminator VARCHAR(255) NOT NULL, PRIMARY KEY(id))
         SQL);
         $this->addSql(<<<'SQL'
             CREATE INDEX IDX_6F0137EA34128B91 ON structure (network_id)

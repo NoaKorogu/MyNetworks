@@ -56,6 +56,7 @@ function initializeStructureFeatures() {
                         <button onclick="cancelStructure()">Annuler</button>
                     </div>
                 `).openPopup();
+                updateAdditionalFields();
             })
             .catch(error => {
                 console.error('Erreur lors de la récupération des types :', error);
@@ -70,12 +71,12 @@ function initializeStructureFeatures() {
         const additionalFields = document.getElementById('additional-fields');
 
         let fieldsHtml = '';
-        if (selectedTypeName === 'arretDeBus') {
+        if (selectedTypeName === 'Arrêt de bus') {
             fieldsHtml = `
                 <label for="line-number">Numéro de ligne :</label>
                 <input id="line-number" type="text" placeholder="Ex: Ligne 42"><br>
             `;
-        } else if (selectedTypeName === 'water') {
+        } else if (selectedTypeName === `Château d'eau`) {
             fieldsHtml = `
                 <label for="water-pressure">Pression de l'eau :</label>
                 <input id="water-pressure" type="text" placeholder="Ex: 3 bars"><br>
@@ -152,13 +153,7 @@ function initializeStructureFeatures() {
         alert('Création de la structure annulée.');
     };
 
-    console.log('create_structure.js loaded');
-    // Exposer la fonction pour activer le mode de placement
+    window.disableStructureMode = disableStructureMode;
     window.enableStructureMode = enableStructureMode;
+    window.initializeStructureFeatures = initializeStructureFeatures;
 }
-
-// Initialiser les fonctionnalités de structure après le chargement de la carte
-window.onload = function () {
-    initMap(); // Assurez-vous que la carte est initialisée
-    initializeStructureFeatures(); // Initialiser les fonctionnalités de structure
-};

@@ -458,6 +458,119 @@ function refreshBusLines() {
             macarte.addLayer(busLinesLayer); // Add the LayerGroup to the map
         })
         .catch(error => console.error('Error refreshing bus lines:', error));
+
+
+    // Fonction pour afficher les structures liées au bus
+    function toggleBusStructures() {
+        if (busStructuresLayer) {
+            macarte.removeLayer(busStructuresLayer);
+            busStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=bus_stop')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const busStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    busStructuresLayer = L.layerGroup(busStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching bus structures:', error));
+        }
+    }
+
+    // Fonction pour afficher les structures liées à l'électricité
+    function toggleElectricalStructures() {
+        if (electricalStructuresLayer) {
+            macarte.removeLayer(electricalStructuresLayer);
+            electricalStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=electrical')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const electricalStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    electricalStructuresLayer = L.layerGroup(electricalStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching electrical structures:', error));
+        }
+    }
+
+    // Fonction pour afficher les structures liées à l'eau
+    function toggleWaterStructures() {
+        if (waterStructuresLayer) {
+            macarte.removeLayer(waterStructuresLayer);
+            waterStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=water')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const waterStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    waterStructuresLayer = L.layerGroup(waterStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching water structures:', error));
+        }
+    }
+
+
+    // Fonction pour afficher les chemins
+    function togglePaths() {
+        if (pathsLayer) {
+            macarte.removeLayer(pathsLayer);
+            pathsLayer = null;
+        } else {
+            fetch('/api/paths')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const paths = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        const polyline = L.polyline(coordinates, {
+                            color: feature.properties.color || 'blue',
+                            weight: 4
+                        });
+
+                        polyline.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return polyline;
+                    });
+
+                    pathsLayer = L.layerGroup(paths).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching paths:', error));
+        }
+    }
+
+
+    window.toggleElectricalStructures = toggleElectricalStructures;
 }
 
 // Load map 

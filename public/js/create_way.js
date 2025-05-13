@@ -143,10 +143,5 @@ function initializeDrawingFeatures() {
     // Expose functions globally
     window.enableDrawingMode = enableDrawingMode;
     window.finishDrawing = finishDrawing;
+    window.initializeDrawingFeatures = initializeDrawingFeatures;
 }
-
-// Initialize drawing features after the map is loaded
-window.onload = function () {
-    initMap(); // Ensure the map is initialized
-    initializeDrawingFeatures(); // Initialize drawing features
-};

@@ -33,7 +33,7 @@ class Structure
     #[ORM\Column(length: 128)]
     protected ?string $name = null;
 
-    #[ORM\Column(type: "geometry")]
+    #[ORM\Column(type: 'geometry', options: ['geometry_type' => 'POINT', 'srid' => 4326], nullable: true)]
     protected ?Point $location = null;
 
     #[ORM\ManyToOne(inversedBy: 'structures')]

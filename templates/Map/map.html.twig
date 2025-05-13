@@ -21,17 +21,20 @@
             {% else %}
                 <button onclick="window.location.href='{{ path('app_login') }}'">Se connecter</button>
             {% endif %}
-            <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()" 
+            <label><input type="checkbox" id="toggle-electrical-structures"  onchange="toggleElectricalStructures()" 
                 {% if not (is_granted('ROLE_EDF') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
-                Afficher les lignes d'électricité
+                Afficher les structures liées à l'électricité
             </label><br>
-            <label><input type="checkbox" id="toggle-gas" onchange="toggleGasLines()" 
+            <label><input type="checkbox" id="toggle-water-structures" onchange="toggleWaterStructures()" 
                 {% if not (is_granted('ROLE_WATER') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
-                Afficher les lignes d'eau
+                Afficher les structures liées à l'eau
             </label><br>
-            <label><input type="checkbox" id="toggle-bus" onchange="toggleBusLines()" 
+            <label><input type="checkbox" id="toggle-bus-structures" onchange="toggleBusStructures()" 
                 {% if not (is_granted('ROLE_FILIBUS') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
-                Afficher les lignes de bus
+                Afficher les structures liées au bus
+            </label><br>
+            <label><input type="checkbox" id="toggle-paths" onchange="togglePaths()">
+                Afficher les chemins
             </label><br>
         </div>
         <div id="map-container">
@@ -47,8 +50,7 @@
     <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" ></script>
     <script src="{{ asset('js/component/color_picker.js') }}" ></script>
     <script src="{{ asset('js/map.js') }}" ></script>
-    {% if app.user %}
-        <script src="{{ asset('js/create_way.js') }}" ></script>
-        <script src="{{ asset('js/create_structure.js') }}" ></script>
-    {% endif %}
+    <script src="{{ asset('js/create_structure.js') }}" ></script>
+    <script src="{{ asset('js/create_way.js') }}" ></script>
+    <script src="{{ asset('js/functions.js') }}" ></script>
 {% endblock %}

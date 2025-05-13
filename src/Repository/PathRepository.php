@@ -81,32 +81,40 @@ class PathRepository extends ServiceEntityRepository
         );
     }
 
-    public function updatePath(int $id, ?string $name, ?string $color): void
+    public function updatePath(int $id, ?string $name, ?string $color): void // Create a log when a path is updated
     {
-        // Build the SQL query dynamically based on provided parameters
-        $fieldsToUpdate = [];
-        $parameters = ['id' => $id];
-
+        $path = $this->find($id);
+        if (!$path) {
+            throw new \InvalidArgumentException('Path not found.');
+        }
+ 
+        // Capture old data
+        $oldData = [
+            'name' => $path->getName(),
+            'color' => $path->getColor(),
+        ];
+ 
+        // Update the entity
         if ($name !== null) {
-            $fieldsToUpdate[] = 'name = :name';
-            $parameters['name'] = $name;
+            $path->setName($name);
         }
-
+ 
         if ($color !== null) {
-            $fieldsToUpdate[] = 'color = :color';
-            $parameters['color'] = $color;
+            $path->setColor($color);
         }
-
-        if (empty($fieldsToUpdate)) {
-            throw new \InvalidArgumentException('No fields to update.');
-        }
-
-        $sql = sprintf(
-            'UPDATE path SET %s, updated_at = NOW() WHERE id = :id',
-            implode(', ', $fieldsToUpdate)
-        );
-
-        $this->_em->getConnection()->executeStatement($sql, $parameters);
+ 
+        // Capture new data
+        $newData = [
+            'name' => $path->getName(),
+            'color' => $path->getColor(),
+        ];
+ 
+        // Persist the changes
+        $this->_em->persist($path);
+        $this->_em->flush();
+ 
+        // Log the update
+        $this->databaseService->logAction('path', $id, $oldData, $newData);
     }
 
 }

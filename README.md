@@ -75,6 +75,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
    ```sh
    php bin/console doctrine:database:create
+   php bin/console make:migration
    php bin/console doctrine:migrations:migrate
    ```
 

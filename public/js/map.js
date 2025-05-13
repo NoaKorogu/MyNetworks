@@ -2,7 +2,7 @@ let lat = 48.852969; let lon = 2.349903;  // Map center by default on Paris
 let macarte = null;
 let waypointMode = false;
 let waypoints = [];
-let waterLinesLayer, gasLinesLayer;
+let waterLinesLayer, gasLinesLayer, pathsLayer;
 const userRole = document.getElementById('map').dataset.role;
 
 const roleToNetwork = {
@@ -571,6 +571,7 @@ function refreshBusLines() {
 
 
     window.toggleElectricalStructures = toggleElectricalStructures;
+    window.pathsLayer = pathsLayer;
 }
 
 // Load map 

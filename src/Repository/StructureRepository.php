@@ -214,7 +214,7 @@ class StructureRepository extends ServiceEntityRepository
         );
     }
 
-    public function updateStructure(int $id, ?string $name, ?int $typeId, ?array $additionalData = null): void
+    public function updateStructure(int $id, ?string $name, ?int $typeId, ?array $additionalData = null, ?float $lon = null, ?float $lat = null): void
     {
         $structure = $this->find($id);
         if (!$structure) {
@@ -233,6 +233,12 @@ class StructureRepository extends ServiceEntityRepository
                 throw new \InvalidArgumentException('Invalid type ID.');
             }
             $structure->setNetworkTypeId($type);
+        }
+    
+        // Mise à jour de la localisation (si les coordonnées sont fournies)
+        if ($lon !== null && $lat !== null) {
+            $point = new \LongitudeOne\Spatial\PHP\Types\Geometry\Point($lon, $lat);
+            $structure->setLocation($point);
         }
     
         // Mise à jour des données supplémentaires

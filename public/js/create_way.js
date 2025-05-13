@@ -95,7 +95,7 @@ function initializeDrawingFeatures() {
                     disableDrawingMode('Chemin crée avec succes !');
                     
                     // Check if the checkbox to show paths is checked
-                    const checkbox = document.getElementById('toggle-bus');
+                    const checkbox = document.getElementById('toggle-paths');
                     if (checkbox.checked) {
                         // Fetch the most recently created path
                         fetch('/api/paths/last')
@@ -138,10 +138,50 @@ function initializeDrawingFeatures() {
             console.log(error);
             disableDrawingMode('Création du chemin annulé.');
         });
-    };
+    }
+
+    // Toggle paths with modification and deletion buttons
+    function togglePaths() {
+        if (pathsLayer) {
+            macarte.removeLayer(pathsLayer);
+            pathsLayer = null;
+        } else {
+            fetch('/api/paths')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const paths = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        const polyline = L.polyline(coordinates, {
+                            color: feature.properties.color || 'blue',
+                            weight: 4,
+                        });
+
+                        // Bind a popup with buttons for modifying or deleting the path
+                        polyline.bindPopup(`
+                            <div id="button-container">
+                                <b>${feature.properties.name || 'Unnamed Path'}</b><br>
+                                <button onclick="modifyPathName(${feature.properties.id})">Modifier le nom</button><br>
+                                <button onclick="modifyPathColor(${feature.properties.id})">Modifier la couleur</button><br>
+                                <button onclick="deletePath(${feature.properties.id})">Supprimer</button>
+                            </div>
+                        `);
+
+                        return polyline;
+                    });
+
+                    pathsLayer = L.layerGroup(paths).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching paths:', error));
+        }
+    }
 
     // Expose functions globally
     window.enableDrawingMode = enableDrawingMode;
     window.finishDrawing = finishDrawing;
+    window.togglePaths = togglePaths;
     window.initializeDrawingFeatures = initializeDrawingFeatures;
 }

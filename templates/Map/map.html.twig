@@ -46,6 +46,16 @@
         </div>
     </div>
 
+    <script>
+        const app = {
+            user: {{ app.user ? {
+                id: app.user.id,
+                roles: app.user.roles
+            }|json_encode|raw : 'null' }}
+        };
+    </script>
+
+
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" ></script>
     <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" ></script>
     <script src="{{ asset('js/component/color_picker.js') }}" ></script>

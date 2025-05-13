@@ -52,7 +52,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 1. **Cloner le projet**
 
    ```sh
-   https://github.com/NoaKorogu/MyNetworks.git
+   git clone https://github.com/NoaKorogu/MyNetworks.git
    cd MyNetworks
    ```
 
@@ -76,16 +76,25 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
    ```sh
    php bin/console doctrine:database:create
    php bin/console make:migration
+   ```
+   
+5. **Installer Postgis dans la DB**
+   - Se connecter a la DB
+    ```sh
+   create extension if not exists postgis;
+   ```
+   - Faire la migration
+   ```sh
    php bin/console doctrine:migrations:migrate
    ```
-
-5. **Démarrer le serveur Symfony**
+   
+6. **Démarrer le serveur Symfony**
 
    ```sh
    symfony server:start
    ```
 
-6. **Accéder à l'application**
+7. **Accéder à l'application**
 
    - Ouvrez votre navigateur et accédez à http://localhost:8000
 

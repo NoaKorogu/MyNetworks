@@ -114,16 +114,36 @@ class PathController extends AbstractController
     public function updatePath(Request $request, int $id, PathRepository $pathRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-    
-        // Extract name and color from the request body
+
+        // Log the input data
+        error_log('Update Path Request Data: ' . json_encode($data));
+
         $name = $data['name'] ?? null;
         $color = $data['color'] ?? null;
-    
-        // Call the repository method to update the path
+
         try {
             $pathRepository->updatePath($id, $name, $color);
-            return new JsonResponse(['message' => 'Path updated successfully.']);
+
+            $updatedPath = $pathRepository->findPathById($id);
+
+            if (!$updatedPath) {
+                return new JsonResponse(['error' => 'Path not found after update.'], Response::HTTP_NOT_FOUND);
+            }
+
+            $geoJson = [
+                'type' => 'Feature',
+                'properties' => [
+                    'id' => $updatedPath[0]['id'],
+                    'name' => $updatedPath[0]['name'],
+                    'color' => $updatedPath[0]['color'],
+                ],
+                'geometry' => json_decode($updatedPath[0]['path_geojson'], true),
+            ];
+
+            return new JsonResponse($geoJson, Response::HTTP_OK);
         } catch (\Exception $e) {
+            // Log the exception
+            error_log('Update Path Error: ' . $e->getMessage());
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

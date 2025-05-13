@@ -22,7 +22,7 @@ class DatabaseService
         // Get the currently authenticated user from the token
         $token = $this->tokenStorage->getToken();
         $currentUser = $token ? $token->getUser() : null;
-
+        
         if (!$currentUser) {
             throw new \RuntimeException('No authenticated user found.');
         }

@@ -141,13 +141,138 @@ function initializeDrawingFeatures() {
         });
     };
 
+    // Fonction pour afficher les chemins
+    function togglePaths() {
+        if (pathsLayer) {
+            macarte.removeLayer(pathsLayer);
+            pathsLayer = null;
+        } else {
+            fetch('/api/paths')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const paths = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        const polyline = L.polyline(coordinates, {
+                            color: feature.properties.color || 'blue',
+                            weight: 4
+                        });
+
+                        polyline.bindPopup(`
+                            <div id="button-container">
+                                <b>${feature.properties.name || 'Unnamed Path'}</b><br>
+                                <button onclick="modifyPathName(${feature.properties.id})">Modifier le nom</button><br>
+                                <button onclick="modifyPathColor(${feature.properties.id})">Modifier la couleur</button><br>
+                                <button onclick="deletePath(${feature.properties.id})">Supprimer</button>
+                            </div>
+                        `);
+                        return polyline;
+                    });
+
+                    pathsLayer = L.layerGroup(paths).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching paths:', error));
+        }
+    }
+
+    function modifyPathName(pathId) {
+        const newName = prompt('Entrez le nouveau nom du chemin :');
+        if (!newName) {
+            alert('Modification annulée.');
+            return;
+        }
+
+        fetch(`/api/paths/${pathId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: newName }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to modify path name.');
+                }
+                return response.json(); // Expect GeoJSON response
+            })
+            .then(data => {
+                alert('Nom du chemin modifié avec succès !');
+                updatePathOnMap(pathId, data); // Pass the updated path data to refresh the map
+            })
+            .catch(error => {
+                console.error('Error modifying path name:', error);
+                alert('Erreur lors de la modification du nom du chemin.');
+            });
+    }
+
+    function modifyPathColor(pathId) {
+        showColorPicker()
+            .then(newColor => {
+                fetch(`/api/paths/${pathId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ color: newColor }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to modify path color.');
+                        }
+                        return response.json(); // Expect GeoJSON response
+                    })
+                    .then(data => {
+                        alert('Couleur du chemin modifiée avec succès !');
+                        updatePathOnMap(pathId, data); // Pass the updated path data to refresh the map
+                    })
+                    .catch(error => {
+                        console.error('Error modifying path color:', error);
+                        alert('Erreur lors de la modification de la couleur du chemin.');
+                    });
+            })
+            .catch(error => {
+                console.log(error);
+                alert('Modification annulée.');
+            });
+    }
+
+    function deletePath(pathId) {
+        const confirmDelete = confirm('Voulez-vous vraiment supprimer ce chemin ?');
+        if (!confirmDelete) {
+            return;
+        }
+
+        fetch(`/api/paths/${pathId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete path.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Chemin supprimé avec succès !');
+                refreshBusLines();
+            })
+            .catch(error => {
+                console.error('Error deleting path:', error);
+                alert('Erreur lors de la suppression du chemin.');
+            });
+    }
+
     // Expose functions globally
     window.enableDrawingMode = enableDrawingMode;
     window.finishDrawing = finishDrawing;
+    window.togglePaths = togglePaths;
+    window.initializeDrawingFeatures = initializeDrawingFeatures;
+    window.modifyPathName = modifyPathName;
+    window.modifyPathColor = modifyPathColor;
+    window.deletePath = deletePath;
 }
-
-// Initialize drawing features after the map is loaded
-window.onload = function () {
-    initMap(); // Ensure the map is initialized
-    initializeDrawingFeatures(); // Initialize drawing features
-};

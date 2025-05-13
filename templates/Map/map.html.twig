@@ -11,12 +11,30 @@
 
     <div id="app">
         <div id="sidebar">
-            <button onclick="enableWaypointMode()">Créer un Waypoint</button>
-            <button onclick="enableDrawingMode()">Créer un chemin</button>
-            <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
-            <label><input type="checkbox" id="toggle-water" onchange="toggleWaterLines()"> Afficher les lignes d'eau potable</label><br>
-            <label><input type="checkbox" id="toggle-gas" onchange="toggleGasLines()"> Afficher les lignes de gaz</label><br>
-            <label><input type="checkbox" id="toggle-bus" onchange="toggleBusLines()"> Afficher les lignes de bus</label><br>
+            {% if app.user %}
+                <div id="mapRole" data-role="{{ app.user.roles[0] }}"></div>
+                <button onclick="window.location.href='{{ path('app_logout') }}'">Se déconnecter</button>
+                <button id="placeStructureButton" onclick="enableStructureMode()">Placer une structure</button>
+                <button onclick="enableDrawingMode()">Créer un chemin</button>
+                <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
+            {% else %}
+                <button onclick="window.location.href='{{ path('app_login') }}'">Se connecter</button>
+            {% endif %}
+            <label><input type="checkbox" id="toggle-electrical-structures"  onchange="toggleElectricalStructures()" 
+                {% if not (is_granted('ROLE_EDF') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les structures liées à l'électricité
+            </label><br>
+            <label><input type="checkbox" id="toggle-water-structures" onchange="toggleWaterStructures()" 
+                {% if not (is_granted('ROLE_WATER') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les structures liées à l'eau
+            </label><br>
+            <label><input type="checkbox" id="toggle-bus-structures" onchange="toggleBusStructures()" 
+                {% if not (is_granted('ROLE_FILIBUS') or is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or app.user is null) %}disabled{% endif %}>
+                Afficher les structures liées au bus
+            </label><br>
+            <label><input type="checkbox" id="toggle-paths" onchange="togglePaths()">
+                Afficher les chemins
+            </label><br>
         </div>
         <div id="map-container">
             <div id="map"></div>
@@ -27,10 +45,11 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" defer></script>
-    <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" defer></script>
-    <script src="{{ asset('js/component/color_picker.js') }}" defer></script>
-    <script src="{{ asset('js/map.js') }}" defer></script>
-    <script type="module" src="{{ asset('js/create_way.js') }}" defer></script>
-
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" ></script>
+    <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" ></script>
+    <script src="{{ asset('js/component/color_picker.js') }}" ></script>
+    <script src="{{ asset('js/map.js') }}" ></script>
+    <script src="{{ asset('js/create_way.js') }}" ></script>
+    <script src="{{ asset('js/create_structure.js') }}" ></script>
+    <script src="{{ asset('js/functions.js') }}" ></script>
 {% endblock %}

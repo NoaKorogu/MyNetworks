@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Path;
+use App\Service\DatabaseService;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -11,9 +12,12 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
  */
 class PathRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private DatabaseService $databaseService;
+
+    public function __construct(ManagerRegistry $registry, DatabaseService $databaseService)
     {
         parent::__construct($registry, Path::class);
+        $this->databaseService = $databaseService;
     }
     
     public function findAllPaths(): array

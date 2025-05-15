@@ -102,7 +102,7 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
 ---
 
-## 📊 Dump de la base de données (a ajouter)
+## 📊 Dump de la base de données
 
 ```sql
 INSERT INTO network(name) VALUES ('Electricité');

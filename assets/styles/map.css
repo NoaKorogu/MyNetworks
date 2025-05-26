@@ -1,0 +1,31 @@
+#sidebar {
+    position: absolute;
+    top: 0; /* Alignez le haut de la barre avec le haut de la fenêtre */
+    left: 0; /* Alignez la barre sur le côté gauche */
+    width: 200px;
+    height: 100vh; /* La barre occupe toute la hauteur de la fenêtre */
+    background-color: white;
+    padding: 10px;
+    border-right: 1px solid #ccc; /* Ajoutez une bordure à droite pour séparer visuellement */
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; /* Ajoutez un défilement si le contenu dépasse la hauteur */
+}
+
+#sidebar label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+#map-container {
+    position: absolute;
+    top: 0;
+    left: 200px; /* Décalez la carte pour qu'elle ne chevauche pas la barre latérale */
+    width: calc(100% - 200px); /* Ajustez la largeur de la carte en fonction de la largeur de la barre */
+    height: 100vh; /* La carte occupe toute la hauteur de la fenêtre */
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}

@@ -20,6 +20,18 @@ class Networks
     private ?string $name = null;
 
     /**
+     * @var Collection<int, Path>
+     */
+    #[ORM\OneToMany(targetEntity: Type::class, mappedBy: 'network_id')]
+    private Collection $types;
+
+    /**
+     * @var Collection<int, Path>
+     */
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'network_id')]
+    private Collection $users;
+
+    /**
      * @var Collection<int, Structure>
      */
     #[ORM\OneToMany(targetEntity: Structure::class, mappedBy: 'network_id')]
@@ -103,6 +115,30 @@ class Networks
     {
         if ($this->paths->removeElement($path) && $path->getNetworkId() === $this) {
             $path->setNetworkId(null);
+        }
+
+        return $this;
+    }
+
+    public function getTypes(): Collection
+    {
+        return $this->types;
+    }
+
+    public function addType(Type $type): static
+    {
+        if (!$this->types->contains($type)) {
+            $this->types->add($type);
+            $type->setNetworkId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeType(Type $type): static
+    {
+        if ($this->types->removeElement($type) && $type->getNetworkId() === $this) {
+            $type->setNetworkId(null);
         }
 
         return $this;

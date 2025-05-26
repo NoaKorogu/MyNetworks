@@ -19,6 +19,10 @@ class Type
     #[ORM\Column(length: 50)]
     private ?string $name = null;
 
+    #[ORM\ManyToOne(inversedBy: 'types')]
+    #[ORM\JoinColumn(name: 'network_id', referencedColumnName: 'id')]
+    private ?Networks $network_id = null;
+
     /**
      * @var Collection<int, Structure>
      */

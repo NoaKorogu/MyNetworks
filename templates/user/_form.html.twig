@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="{{ asset('styles/new.css') }}">
+{{ form_start(form) }}
+    {{ form_row(form.email) }}
+    <div class="password-container">
+        {{ form_row(form.password) }}
+        <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)">
+            <img src="{{ asset('img/oeil.png') }}" alt="Show Password" class="password-icon">
+        </button>
+    </div>
+    {{ form_row(form.role) }}
+
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}
+
+<script>
+    function togglePasswordVisibility(button) {
+        const passwordField = button.previousElementSibling.querySelector('input');
+        const icon = button.querySelector('img');
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.src = "{{ asset('img/cacher.png') }}"; // Image pour cacher le mot de passe
+            icon.alt = "Hide Password";
+        } else {
+            passwordField.type = 'password';
+            icon.src = "{{ asset('img/oeil.png') }}"; // Image pour montrer le mot de passe
+            icon.alt = "Show Password";
+        }
+    }
+</script>

@@ -60,14 +60,14 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
    ```sh
    composer install
-   npm install @symfony/webpack-encore
+   npm install
    npx encore dev
    npm run dev
    npm run build
    ```
 
 3. **Configurer la base de données**
-   - Renommer `.env.local` en `.env`
+   - Dans le fichier `.env`
    - Modifier la variable `DATABASE_URL` :
      ```env
      DATABASE_URL="postgresql://user:password@127.0.0.1:5432/my_network_db?serverVersion=16&charset=utf8"
@@ -102,14 +102,6 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 
 ---
 
-## 📊 Dump de la base de données (a ajouter)
-**⚠️ En priorité :**
+## 📊 Dump de la base de données
 
-```sql
-INSERT INTO network(name) VALUES ('Electricité');
-INSERT INTO network(name) VALUES ('Eau');
-INSERT INTO network(name) VALUES ('Bus');
-INSERT INTO network(name) VALUES ('Admin');
-```
-- type -> créer des structures
-
+Le dump de la base se trouve ici : [`database/dump.sql`](./database/dump.sql)

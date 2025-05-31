@@ -1,10 +1,15 @@
 let lat = 48.852969; let lon = 2.349903;  // Map center by default on Paris
 let macarte = null;
-let waypointMode = false;
-let waypoints = [];
-let waterLinesLayer, gasLinesLayer;
+let waterLinesLayer, gasLinesLayer, pathsLayer;
+const userRole = document.getElementById('map').dataset.role;
 
-// Define waypoint appearance
+const roleToNetwork = {
+    'ROLE_EDF': 1,      // Network ID 1 pour EDF
+    'ROLE_WATER': 2,    // Network ID 2 pour Water
+    'ROLE_FILIBUS': 3   // Network ID 3 pour Filibus
+};
+
+// Define structure appearance
 let customIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
     iconSize: [25, 41],     
@@ -26,68 +31,54 @@ function initMap() {
 
     // Ask for user location
     centerMapOnUserLocation();
-
-    macarte.on('click', function(e) {
-        if (waypointMode) {
-            createWaypoint(e.latlng);
-        }
-    });
 }
 
-function enableWaypointMode() {
-    waypointMode = true;
-    document.getElementById('map').classList.add('cursor-waypoint'); 
-    alert("Cliquez sur la carte pour ajouter un waypoint.");
-}
+function saveStructure(index) {
+    const waypoint = waypoints[index];
+    const selectElement = document.getElementById(`structure-select-${index}`);
+    const selectedType = selectElement.value;
 
-// Create new waypoint
-function createWaypoint(latlng) {
-    waypointMode = false;
-
-    // special cursor -> normal cursor
-    document.getElementById('map').classList.remove('cursor-waypoint');
-
-    let marker = L.marker([latlng.lat, latlng.lng], { icon: customIcon }).addTo(macarte);
-    let waypoint = {
-        lat: latlng.lat,
-        lon: latlng.lng,
-        marker: marker,
-        name: "Nouveau Waypoint"
-    };
-    waypoints.push(waypoint);
-
-    marker.bindPopup(`
-        <div>
-            <b>${waypoint.name}</b><br>
-            <button onclick="editWaypoint(${waypoints.length - 1})">Modifier le nom</button><br>
-            <button onclick="deleteWaypoint(${waypoints.length - 1})">Supprimer</button>
-        </div>
-    `).openPopup();
-}
-
-// Edit waypoint name
-function editWaypoint(index) {
-    let newName = prompt("Entrez un nouveau nom pour ce waypoint :", waypoints[index].name);
-    if (newName !== null && newName.trim() !== "") {
-        waypoints[index].name = newName;
-        waypoints[index].marker.bindPopup(`
-            <div>
-                <b>${newName}</b><br>
-                <button onclick="editWaypoint(${index})">Modifier le nom</button><br>
-                <button onclick="deleteWaypoint(${index})">Supprimer</button>
-            </div>
-        `).openPopup();
+    if (!selectedType) {
+        alert("Veuillez sélectionner une structure.");
+        return;
     }
+
+    // Envoyer les données au backend
+    fetch('/api/structures', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            lat: waypoint.lat,
+            lon: waypoint.lon,
+            name: waypoint.name,
+            networkId: waypoint.networkId,
+            type: selectedType
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Structure sauvegardée avec succès !");
+            } else {
+                alert("Erreur lors de la sauvegarde : " + (data.error || "Inconnue"));
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors de la sauvegarde :", error);
+            alert("Erreur lors de la sauvegarde. Veuillez réessayer.");
+        });
 }
 
-// Delete waypoint
-function deleteWaypoint(index) {
-    let confirmDelete = confirm("Voulez-vous vraiment supprimer ce waypoint ?");
-    if (confirmDelete) {
-        macarte.removeLayer(waypoints[index].marker);
-        waypoints.splice(index, 1);
+// Permit to search the location when pressing 'Enter' key
+let searchBar = document.getElementById('search-bar');
+
+searchBar.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        searchLocation();
     }
-}
+});
 
 // Search Bar
 function searchLocation() {
@@ -107,7 +98,7 @@ function searchLocation() {
 
                 macarte.setView([lat, lon], 14);
 
-                let marker = L.marker([lat, lon]).addTo(macarte)
+                L.marker([lat, lon]).addTo(macarte)
                     .bindPopup(`<b>${result.display_name}</b>`)
                     .openPopup();
             } else {
@@ -156,28 +147,224 @@ function fetchOSMData(query, layer) {
         .catch(error => console.error("Erreur lors du chargement des données OSM :", error));
 }
 
-function toggleWaterLines() {
-    if (document.getElementById("toggle-water").checked) {
-        let waterQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="water"];
-            out geom;`;
-        fetchOSMData(waterQuery, waterLinesLayer);
+function updatePathOnMap(pathId, updatedPathData) {
+    // Find and remove the existing path from the map
+    if (pathsLayer) {
+        pathsLayer.eachLayer(layer => {
+            if (layer.feature && layer.feature.properties.id === pathId) {
+                pathsLayer.removeLayer(layer);
+            }
+        });
+    }
+
+    // Add the updated path to the map
+    const coordinates = updatedPathData.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+    const polyline = L.polyline(coordinates, {
+        color: updatedPathData.properties.color || 'blue',
+        weight: 4
+    });
+
+    // Bind a popup with buttons for modifying or deleting the path
+    polyline.bindPopup(`
+        <div id="button-container">
+            <b>${updatedPathData.properties.name || 'Unnamed Path'}</b><br>
+            <button onclick="modifyPathName(${updatedPathData.properties.id})">Modifier le nom</button><br>
+            <button onclick="modifyPathColor(${updatedPathData.properties.id})">Modifier la couleur</button><br>
+            <button onclick="deletePath(${updatedPathData.properties.id})">Supprimer</button>
+        </div>
+    `);
+
+    // Add the updated path to the pathsLayer
+    if (!pathsLayer) {
+        pathsLayer = L.layerGroup().addTo(macarte);
+    }
+    pathsLayer.addLayer(polyline);
+
+    // Open the popup after adding the updated path
+    polyline.openPopup();
+}
+
+let busLinesLayer = null;
+
+function toggleBusLines() {
+    if (busLinesLayer) {
+        // If bus lines are already displayed, remove them from the map
+        macarte.removeLayer(busLinesLayer);
+        busLinesLayer = null;
     } else {
-        waterLinesLayer.clearLayers();
+        // Fetch bus lines from the API
+        fetch('/api/paths')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.features || !Array.isArray(data.features)) {
+                    throw new Error('Invalid GeoJSON data');
+                }
+
+                // Create polylines for each feature
+                const busLines = data.features.map(feature => {
+                    const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    const polyline = L.polyline(coordinates, {
+                        color: feature.properties.color || 'blue', // Default color if not provided
+                        weight: 4
+                    });
+                    
+                    // Attach the feature object to the polyline
+                    polyline.feature = feature;
+                    
+                    // Bind a popup with buttons for modifying or deleting the path
+                    polyline.bindPopup(`
+                        <div id="button-container">
+                            <b>${feature.properties.name || 'Unnamed Bus Line'}</b><br>
+                            <button onclick="modifyPathName(${feature.properties.id})">Modifier le nom</button><br>
+                            <button onclick="modifyPathColor(${feature.properties.id})">Modifier la couleur</button><br>
+                            <button onclick="deletePath(${feature.properties.id})">Supprimer</button>
+                        </div>
+                    `);
+
+                    return polyline;
+                });
+
+                // Create a LayerGroup and add it to the map
+                busLinesLayer = L.layerGroup(busLines);
+                macarte.addLayer(busLinesLayer); // Add the LayerGroup to the map
+            })
+            .catch(error => console.error('Error fetching bus lines:', error));
     }
 }
 
-function toggleGasLines() {
-    if (document.getElementById("toggle-gas").checked) {
-        let gasQuery = `
-            [out:json];
-            way["man_made"="pipeline"]["substance"="gas"];
-            out geom;`;
-        fetchOSMData(gasQuery, gasLinesLayer);
-    } else {
-        gasLinesLayer.clearLayers();
+function refreshBusLines() {
+    const checkbox = document.getElementById('toggle-bus'); // Reference the checkbox
+    if (!checkbox.checked) {
+        // If the checkbox is not checked, do nothing
+        return;
     }
+
+    if (busLinesLayer) {
+        // Remove the existing layer
+        macarte.removeLayer(busLinesLayer);
+        busLinesLayer = null;
+    }
+
+    // Fetch and display the bus lines again
+    fetch('/api/paths')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.features || !Array.isArray(data.features)) {
+                throw new Error('Invalid GeoJSON data');
+            }
+
+            // Create polylines for each feature
+            const busLines = data.features.map(feature => {
+                const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                const polyline = L.polyline(coordinates, {
+                    color: feature.properties.color || 'blue', // Default color if not provided
+                    weight: 4
+                });
+                
+                // Attach the feature object to the polyline
+                polyline.feature = feature;
+                
+                // Bind a popup with buttons for modifying or deleting the path
+                polyline.bindPopup(`
+                    <div id="button-container">
+                        <b>${feature.properties.name || 'Unnamed Bus Line'}</b><br>
+                        <button onclick="modifyPathName(${feature.properties.id})">Modifier le nom</button><br>
+                        <button onclick="modifyPathColor(${feature.properties.id})">Modifier la couleur</button><br>
+                        <button onclick="deletePath(${feature.properties.id})">Supprimer</button>
+                    </div>
+                `);
+
+                return polyline;
+            });
+
+            // Create a LayerGroup and add it to the map
+            busLinesLayer = L.layerGroup(busLines);
+            macarte.addLayer(busLinesLayer); // Add the LayerGroup to the map
+        })
+        .catch(error => console.error('Error refreshing bus lines:', error));
+
+
+    // Fonction pour afficher les structures liées au bus
+    function toggleBusStructures() {
+        if (busStructuresLayer) {
+            macarte.removeLayer(busStructuresLayer);
+            busStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=bus_stop')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const busStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    busStructuresLayer = L.layerGroup(busStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching bus structures:', error));
+        }
+    }
+
+    // Fonction pour afficher les structures liées à l'électricité
+    function toggleElectricalStructures() {
+        if (electricalStructuresLayer) {
+            macarte.removeLayer(electricalStructuresLayer);
+            electricalStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=electrical')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const electricalStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    electricalStructuresLayer = L.layerGroup(electricalStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching electrical structures:', error));
+        }
+    }
+
+    // Fonction pour afficher les structures liées à l'eau
+    function toggleWaterStructures() {
+        if (waterStructuresLayer) {
+            macarte.removeLayer(waterStructuresLayer);
+            waterStructuresLayer = null;
+        } else {
+            fetch('/api/structures?type=water')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+
+                    const waterStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        marker.bindPopup(`<b>${feature.properties.name}</b>`);
+                        return marker;
+                    });
+
+                    waterStructuresLayer = L.layerGroup(waterStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching water structures:', error));
+        }
+    }
+
+    window.toggleElectricalStructures = toggleElectricalStructures;
+    window.pathsLayer = pathsLayer;
+
 }
 
 // Load map 

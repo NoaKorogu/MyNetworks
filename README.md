@@ -105,3 +105,5 @@ L’objectif est de permettre aux entreprises et collectivités de constituer un
 ## 📊 Dump de la base de données
 
 Le dump de la base se trouve ici : [`database/dump.sql`](./database/dump.sql)
+
+Des données de base sont disponibles ici : [`database/data.sql`](./database/data.sql)

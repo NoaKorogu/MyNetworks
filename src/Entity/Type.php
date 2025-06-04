@@ -19,15 +19,16 @@ class Type
     #[ORM\Column(length: 50)]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'types')]
-    #[ORM\JoinColumn(name: 'network_id', referencedColumnName: 'id')]
-    private ?Networks $network_id = null;
-
     /**
      * @var Collection<int, Structure>
      */
     #[ORM\OneToMany(targetEntity: Structure::class, mappedBy: 'type_id')]  // Updated to match the relationship
     private Collection $structures;
+
+    #[ORM\ManyToOne(targetEntity: Networks::class, inversedBy: 'types')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Networks $network = null;
+
 
     public function __construct()
     {
@@ -74,6 +75,18 @@ class Type
         if ($this->structures->removeElement($structure) && $structure->getNetworkTypeId() === $this) {
                 $structure->setNetworkTypeId(null);
         }
+
+        return $this;
+    }
+
+    public function getNetwork(): ?Networks
+    {
+        return $this->network;
+    }
+
+    public function setNetwork(?Networks $network): static
+    {
+        $this->network = $network;
 
         return $this;
     }

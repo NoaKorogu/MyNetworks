@@ -64,7 +64,7 @@ function initializeToggleFeatures() {
                         if (userHasPermission) {
                             popupContent += `
                                 <button onclick="enterEditMode(${properties.id}, '${properties.name}', '${properties.line_number || ''}', '${properties.type}', '${properties.type_name}')">Modifier</button><br>
-                                <button onclick="deleteStructure(${properties.id})">Supprimer</button>
+                                <button onclick="deleteStructure(${properties.id}, '${properties.type}')">Supprimer</button>
                             `;
                         }
     
@@ -76,6 +76,117 @@ function initializeToggleFeatures() {
                     busStructuresLayer = L.layerGroup(busStructures).addTo(macarte);
                 })
                 .catch(error => console.error('Error fetching bus structures:', error));
+        }
+    };
+
+    // Exemple pour afficher les structures électriques avec les données supplémentaires
+    window.toggleWaterStructures = function () {
+        if (waterStructuresLayer) {
+            macarte.removeLayer(waterStructuresLayer);
+            waterStructuresLayer = null;
+        } else {
+            fetch('/api/structures/type/water')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+    
+                    const waterStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const properties = feature.properties;
+    
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        let popupContent = `
+                            <div id="popup-content-${properties.id}">
+                                <b>Nom :</b> ${properties.name}<br>
+                                <b>Type :</b> ${properties.type_name || 'Inconnu'}<br>
+                        `;
+    
+                        // Ajouter les champs spécifiques "Pression de l'eau" et "Ouvert"
+                        if (properties.water_pressure) {
+                            popupContent += `
+                                <b>Pression de l'eau :</b> ${properties.water_pressure}<br>
+                            `;
+                        }
+                        if (properties.is_open !== null && properties.is_open !== undefined) {
+                            popupContent += `
+                                <b>Ouvert :</b> ${properties.is_open ? 'Oui' : 'Non'}<br>
+                            `;
+                        }
+    
+                        // Vérifier les permissions de l'utilisateur
+                        const userHasPermission = app && app.user && (
+                            app.user.roles.includes('ROLE_ADMIN') || app.user.roles.includes('ROLE_WATER')
+                        );
+                        if (userHasPermission) {
+                            popupContent += `
+                                <button onclick="enterEditMode(${properties.id}, '${properties.name}', '${properties.water_pressure || ''}', '${properties.type}', '${properties.type_name}', ${properties.is_open})">Modifier</button><br>
+                                <button onclick="deleteStructure(${properties.id}, '${properties.type}')">Supprimer</button>
+                            `;
+                        }
+    
+                        popupContent += `</div>`;
+                        marker.bindPopup(popupContent);
+                        return marker;
+                    });
+    
+                    waterStructuresLayer = L.layerGroup(waterStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching water structures:', error));
+        }
+    };
+
+    
+    window.toggleElectricalStructures = function () {
+        if (electricalStructuresLayer) {
+            macarte.removeLayer(electricalStructuresLayer);
+            electricalStructuresLayer = null;
+        } else {
+            fetch('/api/structures/type/electrical')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON data');
+                    }
+    
+                    const electricalStructures = data.features.map(feature => {
+                        const coordinates = feature.geometry.coordinates;
+                        const properties = feature.properties;
+    
+                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
+                        let popupContent = `
+                            <div id="popup-content-${properties.id}">
+                                <b>Nom :</b> ${properties.name}<br>
+                                <b>Type :</b> ${properties.type_name || 'Inconnu'}<br>
+                        `;
+    
+                        // Ajouter le champ spécifique "Capacité"
+                        if (properties.capacity) {
+                            popupContent += `
+                                <b>Capacité :</b> ${properties.capacity}<br>
+                            `;
+                        }
+    
+                        // Vérifier les permissions de l'utilisateur
+                        const userHasPermission = app && app.user && (
+                            app.user.roles.includes('ROLE_ADMIN') || app.user.roles.includes('ROLE_EDF')
+                        );
+                        if (userHasPermission) {
+                            popupContent += `
+                                <button onclick="enterEditMode(${properties.id}, '${properties.name}', '${properties.capacity || ''}', '${properties.type}', '${properties.type_name}')">Modifier</button><br>
+                                <button onclick="deleteStructure(${properties.id}, '${properties.type}')">Supprimer</button>
+                            `;
+                        }
+    
+                        popupContent += `</div>`;
+                        marker.bindPopup(popupContent);
+                        return marker;
+                    });
+    
+                    electricalStructuresLayer = L.layerGroup(electricalStructures).addTo(macarte);
+                })
+                .catch(error => console.error('Error fetching electrical structures:', error));
         }
     };
 
@@ -135,7 +246,7 @@ function initializeToggleFeatures() {
     
         originalContent += `
                 <button onclick="enterEditMode(${id}, '${name}', '${lineNumber || ''}', '${type}')">Modifier</button><br>
-                <button onclick="deleteStructure(${id})">Supprimer</button>
+                <button onclick="deleteStructure(${properties.id}, '${properties.type}')">Supprimer</button>
             </div>
         `;
     
@@ -171,11 +282,11 @@ function initializeToggleFeatures() {
             });
     };
 
-    window.deleteStructure = function (id) {
+    window.deleteStructure = function (id, type) {
         if (!confirm('Êtes-vous sûr de vouloir supprimer cette structure ?')) {
             return;
         }
-
+    
         fetch(`/api/structures/${id}`, {
             method: 'DELETE',
         })
@@ -183,7 +294,14 @@ function initializeToggleFeatures() {
             .then(data => {
                 if (data.message) {
                     alert('Structure supprimée avec succès !');
-                    toggleBusStructures(); // Rafraîchir les structures
+                    // Rafraîchir les structures en fonction du type
+                    if (type === 'electrical') {
+                        toggleElectricalStructures();
+                    } else if (type === 'water') {
+                        toggleWaterStructures();
+                    } else if (type === 'bus_stop') {
+                        toggleBusStructures();
+                    }
                 } else {
                     alert('Erreur lors de la suppression : ' + (data.error || 'Inconnue'));
                 }
@@ -194,116 +312,6 @@ function initializeToggleFeatures() {
             });
         };
     }
-
-    // Exemple pour afficher les structures électriques avec les données supplémentaires
-    window.toggleWaterStructures = function () {
-        if (waterStructuresLayer) {
-            macarte.removeLayer(waterStructuresLayer);
-            let waterStructuresLayer = null;
-        } else {
-            fetch('/api/structures/type/water')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.features || !Array.isArray(data.features)) {
-                        throw new Error('Invalid GeoJSON data');
-                    }
-    
-                    const waterStructures = data.features.map(feature => {
-                        const coordinates = feature.geometry.coordinates;
-                        const properties = feature.properties;
-    
-                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
-                        let popupContent = `
-                            <div id="popup-content-${properties.id}">
-                                <b>Nom :</b> ${properties.name}<br>
-                                <b>Type :</b> ${properties.type_name || 'Inconnu'}<br>
-                        `;
-    
-                        // Ajouter les champs spécifiques "Pression de l'eau" et "Ouvert"
-                        if (properties.water_pressure) {
-                            popupContent += `
-                                <b>Pression de l'eau :</b> ${properties.water_pressure}<br>
-                            `;
-                        }
-                        if (properties.is_open !== null && properties.is_open !== undefined) {
-                            popupContent += `
-                                <b>Ouvert :</b> ${properties.is_open ? 'Oui' : 'Non'}<br>
-                            `;
-                        }
-    
-                        // Vérifier les permissions de l'utilisateur
-                        const userHasPermission = app && app.user && (
-                            app.user.roles.includes('ROLE_ADMIN') || app.user.roles.includes('ROLE_WATER')
-                        );
-                        if (userHasPermission) {
-                            popupContent += `
-                                <button onclick="enterEditMode(${properties.id}, '${properties.name}', '${properties.water_pressure || ''}', '${properties.type}', '${properties.type_name}', ${properties.is_open})">Modifier</button><br>
-                                <button onclick="deleteStructure(${properties.id})">Supprimer</button>
-                            `;
-                        }
-    
-                        popupContent += `</div>`;
-                        marker.bindPopup(popupContent);
-                        return marker;
-                    });
-    
-                    waterStructuresLayer = L.layerGroup(waterStructures).addTo(macarte);
-                })
-                .catch(error => console.error('Error fetching water structures:', error));
-        }
-    };
-
-    window.toggleElectricalStructures = function () {
-        if (electricalStructuresLayer) {
-            macarte.removeLayer(electricalStructuresLayer);
-            let electricalStructuresLayer = null;
-        } else {
-            fetch('/api/structures/type/electrical')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.features || !Array.isArray(data.features)) {
-                        throw new Error('Invalid GeoJSON data');
-                    }
-    
-                    const electricalStructures = data.features.map(feature => {
-                        const coordinates = feature.geometry.coordinates;
-                        const properties = feature.properties;
-    
-                        const marker = L.marker([coordinates[1], coordinates[0]], { icon: customIcon });
-                        let popupContent = `
-                            <div id="popup-content-${properties.id}">
-                                <b>Nom :</b> ${properties.name}<br>
-                                <b>Type :</b> ${properties.type_name || 'Inconnu'}<br>
-                        `;
-    
-                        // Ajouter le champ spécifique "Capacité"
-                        if (properties.capacity) {
-                            popupContent += `
-                                <b>Capacité :</b> ${properties.capacity}<br>
-                            `;
-                        }
-    
-                        // Vérifier les permissions de l'utilisateur
-                        const userHasPermission = app && app.user && (
-                            app.user.roles.includes('ROLE_ADMIN') || app.user.roles.includes('ROLE_EDF')
-                        );
-                        if (userHasPermission) {
-                            popupContent += `
-                                <button onclick="enterEditMode(${properties.id}, '${properties.name}', '${properties.capacity || ''}', '${properties.type}', '${properties.type_name}')">Modifier</button><br>
-                                <button onclick="deleteStructure(${properties.id})">Supprimer</button>
-                            `;
-                        }
-    
-                        popupContent += `</div>`;
-                        marker.bindPopup(popupContent);
-                        return marker;
-                    });
-    
-                    electricalStructuresLayer = L.layerGroup(electricalStructures).addTo(macarte);
-                })
-                .catch(error => console.error('Error fetching electrical structures:', error));
-        }
-    };
 
     // // Fonction pour afficher les chemins
     // window.togglePaths = function () {

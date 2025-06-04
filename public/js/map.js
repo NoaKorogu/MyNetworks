@@ -361,7 +361,9 @@ function refreshBusLines() {
                 .catch(error => console.error('Error fetching water structures:', error));
         }
     }
-
+    
+    window.toggleWaterStructures = toggleWaterStructures;
+    window.toggleBusStructures = toggleBusStructures;
     window.toggleElectricalStructures = toggleElectricalStructures;
     window.pathsLayer = pathsLayer;
 

@@ -172,11 +172,6 @@ class StructureController extends AbstractController
     #[Route('/{id}', name: 'update_structure', methods: ['PUT'])]
     public function updateStructure(Request $request, int $id, StructureRepository $structureRepository): JsonResponse
     {
-        $user = $this->getUser();
-        if (!$user || !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_' . strtoupper($user->getNetwork()->getName()))) {
-            return new JsonResponse(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
-        }
-    
         $data = json_decode($request->getContent(), true);
     
         try {
@@ -184,7 +179,9 @@ class StructureController extends AbstractController
                 $id,
                 $data['name'] ?? null,
                 $data['typeId'] ?? null,
-                $data['additionalData'] ?? null
+                $data['additionalData'] ?? null,
+                $data['lon'] ?? null,
+                $data['lat'] ?? null
             );
             return new JsonResponse(['message' => 'Structure updated successfully.']);
         } catch (\Exception $e) {

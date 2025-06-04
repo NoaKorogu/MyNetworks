@@ -14,6 +14,7 @@
             {% if app.user %}
                 <div id="mapRole" data-role="{{ app.user.roles[0] }}"></div>
                 <button onclick="window.location.href='{{ path('app_logout') }}'">Se déconnecter</button>
+                <button onclick="enableWaypointMode()">Créer un Waypoint</button>
                 <button id="placeStructureButton" onclick="enableStructureMode()">Placer une structure</button>
                 <button onclick="enableDrawingMode()">Créer un chemin</button>
                 <button id="endPathButton" onclick="finishDrawing()" disabled>Fin de la création du chemin</button>
@@ -37,7 +38,7 @@
             </label><br>
         </div>
         <div id="map-container">
-            <div id="map"></div>
+        <div id="map"></div>
             <div id="search-bar-container">
                 <input type="text" id="search-bar" placeholder="Rechercher un lieu..." />
                 <button id="search-button" onclick="searchLocation()">Rechercher</button>
@@ -45,11 +46,20 @@
         </div>
     </div>
 
+    <script>
+        const app = {
+            user: {{ app.user ? {
+                id: app.user.id,
+                roles: app.user.roles
+            }|json_encode|raw : 'null' }}
+        };
+    </script>
+
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" ></script>
     <script src="https://unpkg.com/osmtogeojson@6.0.0/dist/osmtogeojson.umd.js" ></script>
     <script src="{{ asset('js/component/color_picker.js') }}" ></script>
     <script src="{{ asset('js/map.js') }}" ></script>
-    <script src="{{ asset('js/create_way.js') }}" ></script>
     <script src="{{ asset('js/create_structure.js') }}" ></script>
+    <script src="{{ asset('js/create_way.js') }}" ></script>
     <script src="{{ asset('js/functions.js') }}" ></script>
 {% endblock %}
